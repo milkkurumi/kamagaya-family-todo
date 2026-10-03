@@ -69,6 +69,8 @@ export interface Settings {
   firstChild: boolean
   /** 初期設定を完了したか（妊活中は日付なしで利用するため） */
   configured?: boolean
+  /** 保育園のお気に入りIDリスト */
+  nurseryFavorites?: string[]
 }
 
 export interface AppData {

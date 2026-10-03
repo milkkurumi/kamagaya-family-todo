@@ -7,8 +7,9 @@ import { PHASE, PRIORITY, ROLE, TIMING_LABEL, buildViews, sortViews, type Timing
 import { buildIcs, downloadIcs } from './lib/calendar'
 import { TaskCard } from './components/TaskCard'
 import { SettingsPanel } from './components/SettingsPanel'
+import { NurseryList } from './components/NurseryList'
 
-type Tab = 'now' | 'timeline' | 'scheduled'
+type Tab = 'now' | 'timeline' | 'scheduled' | 'nursery'
 
 export default function App() {
   const [data, setData] = useState<AppData>(load)
@@ -173,6 +174,7 @@ export default function App() {
             ['now', 'いまやること'],
             ['timeline', 'ぜんぶ見る'],
             ['scheduled', `予定（${upcomingScheduled.length}）`],
+            ['nursery', '保活・保育園'],
           ] as const
         ).map(([k, l]) => (
           <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>
@@ -181,7 +183,7 @@ export default function App() {
         ))}
       </nav>
 
-      {tab !== 'scheduled' && (
+      {tab !== 'scheduled' && tab !== 'nursery' && (
         <section className="filters">
           <button
             className={`papa-mode ${papaMode ? 'on' : ''}`}
@@ -235,6 +237,7 @@ export default function App() {
             ))}
           </section>
         )}
+        {tab === 'nursery' && <NurseryList settings={settings} onUpdateSettings={saveSettings} />}
       </main>
 
       <footer>
