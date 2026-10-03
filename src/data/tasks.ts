@@ -61,6 +61,9 @@ export const TASKS: TaskDef[] = [
     title: '妊活前の健康チェック（風しん抗体・葉酸）',
     phase: 'prep', priority: 'optional', role: 'together', anchor: 'none',
     summary: '風しん抗体の有無を夫婦で確認し、妊娠を希望する女性は葉酸の摂取を始めておくと安心です。抗体検査の公費助成の有無は市HPで確認できます。',
+    affiliate: [
+      { url: 'https://www.amazon.co.jp/s?k=%E8%91%89%E9%85%B8%E3%82%B5%E3%83%97%E3%83%AA+%E5%A6%8A%E5%A8%A0%E6%BA%96%E5%82%99&tag=milkkurumix02-22', label: '葉酸サプリ（妊娠前から初期の必須アイテム）', icon: '💊' }
+    ],
     ...SRC.city,
   },
 
@@ -209,6 +212,9 @@ export const TASKS: TaskDef[] = [
     startOffset: -60, endOffset: -14,
     summary: '鎌ケ谷市では宿泊型（産後4か月未満）・通所型・訪問型（産後1歳未満）の産後ケアを実施しています。母体の休息や授乳指導が受けられるので、産後の体調に備えて利用方法を確認しておきましょう（自己負担あり）。',
     place: KENKO,
+    affiliate: [
+      { url: 'https://www.amazon.co.jp/s?k=%E3%83%81%E3%83%A7%E3%82%B3%E3%83%A9BB+%E3%83%8E%E3%83%B3%E3%82%AB%E3%83%95%E3%82%A7%E3%82%A4%E3%83%B3&tag=milkkurumix02-22', label: 'チョコラBB等のノンカフェイン栄養ドリンク（産後の疲労回復に）', icon: '🍹' }
+    ],
     ...SRC.born,
   },
 
