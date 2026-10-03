@@ -1,0 +1,46 @@
+name: Auto Monitor Systems with Gemini
+
+on:
+  schedule:
+    # 毎週月曜日の朝9時に実行 (JST 09:00 = UTC 00:00)
+    - cron: '0 0 * * 1'
+  workflow_dispatch: # 手動実行用ボタンも有効化
+
+jobs:
+  check-updates:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Gemini 3.1 Pro Monitoring Script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: npx tsx scripts/monitor.ts
+
+      - name: Check if report has updates
+        id: check
+        run: |
+          if grep -q "現時点では変更なし" monitor_report.md; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Issue if changes detected
+        if: steps.check.outputs.has_changes == 'true'
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: "⚠️ 【自動監視】制度変更の可能性を検知しました"
+          content-filepath: ./monitor_report.md
+          labels: "update-required, automated"
