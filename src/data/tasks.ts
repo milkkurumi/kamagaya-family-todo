@@ -218,6 +218,25 @@ export const TASKS: TaskDef[] = [
     ...SRC.born,
   },
 
+  {
+    id: 'preg-leave-benefits',
+    title: '産休・育休の申請と給付金の手続き',
+    phase: 'pregnancy', priority: 'must', role: 'together', anchor: 'due',
+    startOffset: -120, endOffset: -60,
+    summary: '【もらえるお金・免除】パパ・ママそれぞれの職場で「産休」「育休」の申請をします。あわせて「育児休業給付金」の受給や「社会保険料の免除」の手続きを勤務先の人事・総務に確認しましょう。',
+    papaNote: 'パパの育休（産後パパ育休含む）は早めに職場に相談し、手取りがどう変わるかシミュレーションを。',
+    affiliate: [
+      { url: 'https://www.amazon.co.jp/s?k=%E8%82%B2%E4%BC%91+%E3%81%8A%E9%87%91+%E6%9C%AC&tag=milkkurumix02-22', label: '育休・もらえるお金がわかる本（制度の損得を学ぶ）', icon: '📚' }
+    ]
+  },
+  {
+    id: 'preg-money-check',
+    title: 'もらえるお金・助成金の総チェック',
+    phase: 'pregnancy', priority: 'recommend', role: 'together', anchor: 'due',
+    startOffset: -60, endOffset: -14,
+    summary: '【チェックリスト】①出産育児一時金（原則50万円/産院で直接支払）、②出産・子育て応援交付金（計10万円/市）、③児童手当（国）、④育児休業給付金（雇用保険）。漏れがないか夫婦で把握しておきましょう。',
+  },
+
   // ───────────── 産後〜生後2か月 ─────────────
   {
     id: 'pp-birth-reg',
