@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { NURSERIES, Nursery, NurseryType } from '../data/nurseries';
-import { Settings } from '../types';
+import { NURSERIES } from '../data/nurseries';
+import type { NurseryType } from '../data/nurseries';
+import type { Settings } from '../types';
 
 interface NurseryListProps {
   settings: Settings;
