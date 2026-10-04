@@ -531,21 +531,21 @@ footer {
 }
 
 
-/* ─ affiliates ─ */
-.affiliates {
+/* ─ recommendations ─ */
+.recommendations {
   margin: 1rem 0;
   background: #f8fcfb;
   border: 1px solid #c2e5d3;
   border-radius: 10px;
   padding: 0.8rem;
 }
-.affiliates strong {
+.recommendations strong {
   color: #2b7055;
   font-size: 0.85rem;
   display: block;
   margin-bottom: 0.4rem;
 }
-.affiliates ul {
+.recommendations ul {
   margin: 0 !important;
   padding: 0 !important;
   list-style: none;
@@ -553,7 +553,7 @@ footer {
   flex-direction: column;
   gap: 0.4rem;
 }
-.affiliate-link {
+.ext-link {
   display: block;
   text-decoration: none;
   color: var(--ink);
@@ -565,7 +565,7 @@ footer {
   font-weight: 700;
   transition: all 0.2s;
 }
-.affiliate-link:hover {
+.ext-link:hover {
   border-color: var(--opt);
   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }

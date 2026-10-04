@@ -137,12 +137,12 @@ export function TaskCard({ view, settings, onChange }: Props) {
           )}
 
           {task.affiliate && task.affiliate.length > 0 && (
-            <div className="affiliates">
+            <div className="recommendations">
               <strong>🛒 おすすめ・準備リスト <small style={{ fontWeight: 400, color: '#888' }}>PR</small></strong>
               <ul>
                 {task.affiliate.map((a, i) => (
                   <li key={i}>
-                    <a href={a.url} target="_blank" rel="noopener noreferrer" className="affiliate-link">
+                    <a href={a.url} target="_blank" rel="noopener noreferrer" className="ext-link">
                       {a.icon} {a.label}
                     </a>
                   </li>
