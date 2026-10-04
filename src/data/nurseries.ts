@@ -1,4 +1,4 @@
-export type NurseryType = '市立保育園' | '私立保育園' | '認定こども園' | '小規模保育'
+export type NurseryType = '市立保育園' | '私立保育園' | '幼稚園' | '認定こども園' | '小規模保育'
 
 export interface Nursery {
   id: string
@@ -32,6 +32,14 @@ export const NURSERIES: Nursery[] = [
   { id: 'fuji-kg', name: '鎌ケ谷ふじ幼稚園', type: '認定こども園' },
   { id: 'midori-kg', name: '鎌ヶ谷みどり幼稚園', type: '認定こども園' },
 
+  { id: 'kamagaya-kg', name: 'かまがや幼稚園', type: '幼稚園', url: 'https://www.kamagaya.ed.jp/' },
+  { id: 'michiru-kg', name: 'みちる幼稚園', type: '幼稚園', url: 'https://michiru.ed.jp/' },
+  { id: 'hikari-kg', name: '鎌ケ谷ひかり幼稚園', type: '幼稚園', url: 'https://kamagayahikari.ed.jp/' },
+  { id: 'fujidaini-kg', name: '鎌ケ谷ふじ第2幼稚園', type: '幼稚園' },
+  { id: 'watanabe-kg', name: '東京聖栄大学附属わたなべ幼稚園', type: '幼稚園', url: 'https://www.watanabe-kg.ed.jp/' },
+  { id: 'satsuma-kg', name: 'さつま幼稚園', type: '幼稚園', url: 'https://www.satsuma.ed.jp/' },
+  { id: 'sakura-kg', name: '鎌ケ谷さくら幼稚園', type: '幼稚園', url: 'https://www.sakura-youchien.ed.jp/' },
+
   { id: 'athome-hoshinoko', name: 'あっとほーむママ・ほしのこ', type: '小規模保育' },
   { id: 'athome-nijinoko', name: 'あっとほーむママ・にじのこ', type: '小規模保育' },
   { id: 'michiru-kids', name: 'みちるkids園', type: '小規模保育' },
@@ -47,5 +55,7 @@ export const NURSERIES: Nursery[] = [
 export const mapUrl = (name: string) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${name} 鎌ケ谷市`)}`
 
-export const searchUrl = (name: string) =>
-  `https://www.google.com/search?q=${encodeURIComponent(`${name} 鎌ケ谷市 保育園`)}`
+export const searchUrl = (nursery: Nursery) => {
+  const keyword = nursery.type === '幼稚園' ? '幼稚園' : '保育園'
+  return `https://www.google.com/search?q=${encodeURIComponent(`${nursery.name} 鎌ケ谷市 ${keyword}`)}`
+}

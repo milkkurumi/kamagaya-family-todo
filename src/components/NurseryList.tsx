@@ -8,7 +8,7 @@ interface NurseryListProps {
   onUpdateSettings: (newSettings: Settings) => void
 }
 
-const TYPES: (NurseryType | 'fav' | 'all')[] = ['all', 'fav', '市立保育園', '私立保育園', '認定こども園', '小規模保育']
+const TYPES: (NurseryType | 'fav' | 'all')[] = ['all', 'fav', '市立保育園', '私立保育園', '幼稚園', '認定こども園', '小規模保育']
 const LABEL: Record<string, string> = { all: 'すべて', fav: '★ お気に入り' }
 
 export function NurseryList({ settings, onUpdateSettings }: NurseryListProps) {
@@ -47,12 +47,12 @@ export function NurseryList({ settings, onUpdateSettings }: NurseryListProps) {
 
       <div style={{ marginBottom: '1rem' }}>
         <a 
-          href="https://www.google.com/maps/search/鎌ケ谷市+保育園" 
+          href="https://www.google.com/maps/search/鎌ケ谷市+保育園+OR+幼稚園" 
           target="_blank" 
           rel="noreferrer"
           style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: '#f0f5f3', color: '#2b7055', padding: '0.6rem 1rem', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.9rem' }}
         >
-          📍 Googleマップで鎌ケ谷市周辺の保育園をまとめて見る
+          📍 Googleマップで鎌ケ谷市周辺の保育園・幼稚園をまとめて見る
         </a>
       </div>
 
@@ -91,7 +91,7 @@ export function NurseryList({ settings, onUpdateSettings }: NurseryListProps) {
                 {n.note && <div style={{ fontSize: '0.8rem', color: '#666' }}>{n.note}</div>}
               </div>
               <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
-                <a href={n.url || searchUrl(n.name)} target="_blank" rel="noreferrer" title={n.url ? '公式サイトを見る' : 'Webで検索'} style={{ fontSize: '1.2rem', textDecoration: 'none' }}>
+                <a href={n.url || searchUrl(n)} target="_blank" rel="noreferrer" title={n.url ? '公式サイトを見る' : 'Webで検索'} style={{ fontSize: '1.2rem', textDecoration: 'none' }}>
                   {n.url ? '🌐' : '🔍'}
                 </a>
                 <a href={mapUrl(n.name)} target="_blank" rel="noreferrer" title="地図で見る" style={{ fontSize: '1.3rem', textDecoration: 'none' }}>
