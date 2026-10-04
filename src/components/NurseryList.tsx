@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NURSERIES, mapUrl } from '../data/nurseries'
+import { NURSERIES, mapUrl, searchUrl } from '../data/nurseries'
 import type { NurseryType } from '../data/nurseries'
 import type { Settings } from '../types'
 
@@ -79,16 +79,21 @@ export function NurseryList({ settings, onUpdateSettings }: NurseryListProps) {
                 <div style={{ margin: '0.25rem 0 0', fontWeight: 700 }}>{n.name}</div>
                 {n.note && <div style={{ fontSize: '0.8rem', color: '#666' }}>{n.note}</div>}
               </div>
-              <a href={mapUrl(n.name)} target="_blank" rel="noreferrer" title="地図で見る" style={{ fontSize: '1.3rem', textDecoration: 'none' }}>
-                📍
-              </a>
-              <button
-                onClick={() => toggleFavorite(n.id)}
-                aria-label="お気に入り"
-                style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: fav ? '#f5b400' : '#ccc' }}
-              >
-                {fav ? '★' : '☆'}
-              </button>
+              <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
+                <a href={n.url || searchUrl(n.name)} target="_blank" rel="noreferrer" title={n.url ? '公式サイトを見る' : 'Webで検索'} style={{ fontSize: '1.2rem', textDecoration: 'none' }}>
+                  {n.url ? '🌐' : '🔍'}
+                </a>
+                <a href={mapUrl(n.name)} target="_blank" rel="noreferrer" title="地図で見る" style={{ fontSize: '1.3rem', textDecoration: 'none' }}>
+                  📍
+                </a>
+                <button
+                  onClick={() => toggleFavorite(n.id)}
+                  aria-label="お気に入り"
+                  style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: fav ? '#f5b400' : '#ccc', padding: 0 }}
+                >
+                  {fav ? '★' : '☆'}
+                </button>
+              </div>
             </div>
           )
         })}

@@ -5,6 +5,7 @@ export interface Nursery {
   name: string
   type: NurseryType
   note?: string
+  url?: string
 }
 
 /**
@@ -13,10 +14,10 @@ export interface Nursery {
  * 出典: 鎌ケ谷市公式ホームページ 保育施設一覧（2026年10月確認）
  */
 export const NURSERIES: Nursery[] = [
-  { id: 'michinobe', name: '市立道野辺保育園', type: '市立保育園' },
-  { id: 'minamihatsutomi', name: '市立南初富保育園', type: '市立保育園' },
-  { id: 'awano', name: '市立粟野保育園', type: '市立保育園' },
-  { id: 'kamagaya', name: '市立鎌ケ谷保育園', type: '市立保育園' },
+  { id: 'michinobe', name: '市立道野辺保育園', type: '市立保育園', url: 'https://www.city.kamagaya.chiba.jp/kosodate/hoikuen/shiritsuhoikuen/michinobe.html' },
+  { id: 'minamihatsutomi', name: '市立南初富保育園', type: '市立保育園', url: 'https://www.city.kamagaya.chiba.jp/kosodate/hoikuen/shiritsuhoikuen/minamihatsutomi.html' },
+  { id: 'awano', name: '市立粟野保育園', type: '市立保育園', url: 'https://www.city.kamagaya.chiba.jp/kosodate/hoikuen/shiritsuhoikuen/awano.html' },
+  { id: 'kamagaya', name: '市立鎌ケ谷保育園', type: '市立保育園', url: 'https://www.city.kamagaya.chiba.jp/kosodate/hoikuen/shiritsuhoikuen/kamagaya.html' },
 
   { id: 'fujinoko', name: 'ふじのこ保育園', type: '私立保育園' },
   { id: 'risunoko', name: 'りすのこ園', type: '私立保育園', note: 'ふじのこ保育園の分園' },
@@ -45,3 +46,6 @@ export const NURSERIES: Nursery[] = [
 
 export const mapUrl = (name: string) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${name} 鎌ケ谷市`)}`
+
+export const searchUrl = (name: string) =>
+  `https://www.google.com/search?q=${encodeURIComponent(`${name} 鎌ケ谷市 保育園`)}`
