@@ -14,10 +14,10 @@ export interface Nursery {
  * 出典: 鎌ケ谷市公式ホームページ 保育施設一覧（2026年10月確認）
  */
 export const NURSERIES: Nursery[] = [
-  { id: 'michinobe', name: '市立道野辺保育園', type: '市立保育園', url: 'https://www.city.kamagaya.chiba.jp/kosodate/hoikuen/shiritsuhoikuen/michinobe.html' },
-  { id: 'minamihatsutomi', name: '市立南初富保育園', type: '市立保育園', url: 'https://www.city.kamagaya.chiba.jp/kosodate/hoikuen/shiritsuhoikuen/minamihatsutomi.html' },
-  { id: 'awano', name: '市立粟野保育園', type: '市立保育園', url: 'https://www.city.kamagaya.chiba.jp/kosodate/hoikuen/shiritsuhoikuen/awano.html' },
-  { id: 'kamagaya', name: '市立鎌ケ谷保育園', type: '市立保育園', url: 'https://www.city.kamagaya.chiba.jp/kosodate/hoikuen/shiritsuhoikuen/kamagaya.html' },
+  { id: 'michinobe', name: '市立道野辺保育園', type: '市立保育園', url: 'https://kamakko.info/hoiku/hoikuen/' },
+  { id: 'minamihatsutomi', name: '市立南初富保育園', type: '市立保育園', url: 'https://kamakko.info/hoiku/hoikuen/' },
+  { id: 'awano', name: '市立粟野保育園', type: '市立保育園', url: 'https://kamakko.info/hoiku/hoikuen/' },
+  { id: 'kamagaya', name: '市立鎌ケ谷保育園', type: '市立保育園', url: 'https://kamakko.info/hoiku/hoikuen/' },
 
   { id: 'fujinoko', name: 'ふじのこ保育園', type: '私立保育園' },
   { id: 'risunoko', name: 'りすのこ園', type: '私立保育園', note: 'ふじのこ保育園の分園' },
@@ -32,7 +32,7 @@ export const NURSERIES: Nursery[] = [
   { id: 'fuji-kg', name: '鎌ケ谷ふじ幼稚園', type: '認定こども園' },
   { id: 'midori-kg', name: '鎌ヶ谷みどり幼稚園', type: '認定こども園' },
 
-  { id: 'kamagaya-kg', name: 'かまがや幼稚園', type: '幼稚園', url: 'https://www.kamagaya.ed.jp/' },
+  { id: 'kamagaya-kg', name: 'かまがや幼稚園', type: '幼稚園', url: 'http://www.kamagaya-kindergarten.ed.jp/' },
   { id: 'michiru-kg', name: 'みちる幼稚園', type: '幼稚園', url: 'https://michiru.ed.jp/' },
   { id: 'hikari-kg', name: '鎌ケ谷ひかり幼稚園', type: '幼稚園', url: 'https://kamagayahikari.ed.jp/' },
   { id: 'fujidaini-kg', name: '鎌ケ谷ふじ第2幼稚園', type: '幼稚園' },
