@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:urls": "tsx scripts/validate_urls.ts"
   },
   "devDependencies": {
     "@google/genai": "^2.27.0",
