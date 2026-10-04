@@ -29,16 +29,16 @@ export const NURSERIES: Nursery[] = [
   { id: 'takashi-daibutsu', name: 'たかし保育園鎌ケ谷大仏', type: '私立保育園' },
   { id: 'ks-garden', name: "K's garden 鎌ケ谷保育園", type: '私立保育園' },
 
-  { id: 'fuji-kg', name: '鎌ケ谷ふじ幼稚園', type: '認定こども園' },
-  { id: 'midori-kg', name: '鎌ヶ谷みどり幼稚園', type: '認定こども園' },
+  { id: 'fuji-kg', name: '鎌ケ谷ふじ幼稚園', type: '認定こども園', url: 'https://www.minagaku.ed.jp/' },
+  { id: 'midori-kg', name: '鎌ヶ谷みどり幼稚園', type: '認定こども園', url: 'http://www.kamagaya-midori.com/' },
 
   { id: 'kamagaya-kg', name: 'かまがや幼稚園', type: '幼稚園', url: 'http://www.kamagaya-kindergarten.ed.jp/' },
-  { id: 'michiru-kg', name: 'みちる幼稚園', type: '幼稚園', url: 'https://michiru.ed.jp/' },
-  { id: 'hikari-kg', name: '鎌ケ谷ひかり幼稚園', type: '幼稚園', url: 'https://kamagayahikari.ed.jp/' },
+  { id: 'michiru-kg', name: 'みちる幼稚園', type: '幼稚園', url: 'https://michiru1969.com/' },
+  { id: 'hikari-kg', name: '鎌ケ谷ひかり幼稚園', type: '幼稚園', url: 'http://www.hikari-kamagaya.ed.jp/' },
   { id: 'fujidaini-kg', name: '鎌ケ谷ふじ第2幼稚園', type: '幼稚園' },
-  { id: 'watanabe-kg', name: '東京聖栄大学附属わたなべ幼稚園', type: '幼稚園', url: 'https://www.watanabe-kg.ed.jp/' },
-  { id: 'satsuma-kg', name: 'さつま幼稚園', type: '幼稚園', url: 'https://www.satsuma.ed.jp/' },
-  { id: 'sakura-kg', name: '鎌ケ谷さくら幼稚園', type: '幼稚園', url: 'https://www.sakura-youchien.ed.jp/' },
+  { id: 'watanabe-kg', name: '東京聖栄大学附属わたなべ幼稚園', type: '幼稚園', url: 'https://www.watanabe-youchien.ed.jp/' },
+  { id: 'satsuma-kg', name: 'さつま幼稚園', type: '幼稚園', url: 'http://www.satsuma-kinder.jp/' },
+  { id: 'sakura-kg', name: '鎌ケ谷さくら幼稚園', type: '幼稚園', url: 'https://kamagayasakura.ed.jp/' },
 
   { id: 'athome-hoshinoko', name: 'あっとほーむママ・ほしのこ', type: '小規模保育' },
   { id: 'athome-nijinoko', name: 'あっとほーむママ・にじのこ', type: '小規模保育' },
