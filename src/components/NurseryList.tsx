@@ -14,10 +14,15 @@ const LABEL: Record<string, string> = { all: 'すべて', fav: '★ お気に入
 export function NurseryList({ settings, onUpdateSettings }: NurseryListProps) {
   const [filter, setFilter] = useState<(typeof TYPES)[number]>('all')
   const favorites = settings.nurseryFavorites || []
+  const memos = settings.nurseryMemos || {}
 
   const toggleFavorite = (id: string) => {
     const next = favorites.includes(id) ? favorites.filter((f) => f !== id) : [...favorites, id]
     onUpdateSettings({ ...settings, nurseryFavorites: next })
+  }
+
+  const updateMemo = (id: string, text: string) => {
+    onUpdateSettings({ ...settings, nurseryMemos: { ...memos, [id]: text } })
   }
 
   const list = NURSERIES.filter((n) =>
@@ -79,32 +84,48 @@ export function NurseryList({ settings, onUpdateSettings }: NurseryListProps) {
                 padding: '0.8rem 1rem',
                 background: '#fff',
                 display: 'flex',
-                alignItems: 'center',
+                flexDirection: 'column',
                 gap: '0.8rem',
               }}
             >
-              <div style={{ flex: 1 }}>
-                <span style={{ fontSize: '0.72rem', background: '#e0f2e9', color: '#2b7055', padding: '2px 6px', borderRadius: '4px' }}>
-                  {n.type}
-                </span>
-                <div style={{ margin: '0.25rem 0 0', fontWeight: 700 }}>{n.name}</div>
-                {n.note && <div style={{ fontSize: '0.8rem', color: '#666' }}>{n.note}</div>}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                <div style={{ flex: 1 }}>
+                  <span style={{ fontSize: '0.72rem', background: '#e0f2e9', color: '#2b7055', padding: '2px 6px', borderRadius: '4px' }}>
+                    {n.type}
+                  </span>
+                  <div style={{ margin: '0.25rem 0 0', fontWeight: 700 }}>{n.name}</div>
+                  {n.note && <div style={{ fontSize: '0.8rem', color: '#666' }}>{n.note}</div>}
+                </div>
+                <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
+                  <a href={n.url || searchUrl(n)} target="_blank" rel="noreferrer" title={n.url ? '公式サイトを見る' : 'Webで検索'} style={{ fontSize: '1.2rem', textDecoration: 'none' }}>
+                    {n.url ? '🌐' : '🔍'}
+                  </a>
+                  <a href={mapUrl(n.name)} target="_blank" rel="noreferrer" title="地図で見る" style={{ fontSize: '1.3rem', textDecoration: 'none' }}>
+                    📍
+                  </a>
+                  <button
+                    onClick={() => toggleFavorite(n.id)}
+                    aria-label="お気に入り"
+                    style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: fav ? '#f5b400' : '#ccc', padding: 0 }}
+                  >
+                    {fav ? '★' : '☆'}
+                  </button>
+                </div>
               </div>
-              <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
-                <a href={n.url || searchUrl(n)} target="_blank" rel="noreferrer" title={n.url ? '公式サイトを見る' : 'Webで検索'} style={{ fontSize: '1.2rem', textDecoration: 'none' }}>
-                  {n.url ? '🌐' : '🔍'}
-                </a>
-                <a href={mapUrl(n.name)} target="_blank" rel="noreferrer" title="地図で見る" style={{ fontSize: '1.3rem', textDecoration: 'none' }}>
-                  📍
-                </a>
-                <button
-                  onClick={() => toggleFavorite(n.id)}
-                  aria-label="お気に入り"
-                  style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: fav ? '#f5b400' : '#ccc', padding: 0 }}
-                >
-                  {fav ? '★' : '☆'}
-                </button>
-              </div>
+              
+              {(fav || memos[n.id]) && (
+                <textarea
+                  value={memos[n.id] || ''}
+                  onChange={(e) => updateMemo(n.id, e.target.value)}
+                  placeholder="見学の感想やメモを夫婦で共有..."
+                  style={{
+                    width: '100%', boxSizing: 'border-box', padding: '0.6rem',
+                    borderRadius: '8px', border: '1px solid #e1e8e5',
+                    background: '#f9fbf9', fontSize: '0.9rem', color: '#333',
+                    resize: 'vertical', minHeight: '60px'
+                  }}
+                />
+              )}
             </div>
           )
         })}

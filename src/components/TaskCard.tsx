@@ -20,6 +20,11 @@ export function TaskCard({ view, settings, onChange }: Props) {
 
   const update = (patch: Partial<TaskState>) => onChange(task.id, patch)
 
+  const toggleChecklist = (item: string) => {
+    const current = state.checklistState || {}
+    update({ checklistState: { ...current, [item]: !current[item] } })
+  }
+
   const schedule = () => {
     if (!date) return
     update({ date, time, status: 'scheduled' })
@@ -108,6 +113,27 @@ export function TaskCard({ view, settings, onChange }: Props) {
                 🔗 {task.sourceLabel ?? '公式情報'}
               </a>
             </p>
+          )}
+
+          {task.checklist && task.checklist.length > 0 && (
+            <div className="checklist-container">
+              <strong>✅ 詳細チェックリスト</strong>
+              <div className="checklist">
+                {task.checklist.map((item) => {
+                  const checked = state.checklistState?.[item] ?? false
+                  return (
+                    <label key={item} className={`checklist-item ${checked ? 'checked' : ''}`}>
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleChecklist(item)}
+                      />
+                      <span>{item}</span>
+                    </label>
+                  )
+                })}
+              </div>
+            </div>
           )}
 
           {task.affiliate && task.affiliate.length > 0 && (

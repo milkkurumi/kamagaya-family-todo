@@ -171,6 +171,17 @@ export const TASKS: TaskDef[] = [
     startOffset: -100, endOffset: -35,
     summary: '肌着・おむつ・ベビーベッド・ベビーカーなど。チーパス協賛店も活用しましょう。リストを夫婦で共有してパパが調達するとスムーズです。',
     papaNote: 'ママと一緒にリストを作ったら、買い出しと組み立てはパパの出番。',
+    checklist: [
+      '短肌着・コンビ肌着（各5〜6枚）',
+      'ツーウェイオール等の服（3〜4枚）',
+      '紙おむつ（新生児用1〜2パック）',
+      'おしりふき（箱買いが便利）',
+      'ベビーバス・沐浴布・ベビーソープ',
+      'バスタオル・ガーゼハンカチ（多めに）',
+      'ベビー布団・シーツ',
+      '爪切り・綿棒・体温計',
+      '哺乳瓶・ミルク（必要に応じて）'
+    ],
     affiliate: [
       { url: 'https://www.amazon.co.jp/baby-reg?tag=milkkurumix02-22', label: 'Amazonベビーレジストリを作成（無料の出産準備リスト・サンプル特典あり）', icon: '🎁' },
       { url: 'https://www.amazon.co.jp/b?node=344845011&tag=milkkurumix02-22', label: 'Amazonでベビー用品の売れ筋ランキングを見る', icon: '🛒' }
@@ -201,6 +212,18 @@ export const TASKS: TaskDef[] = [
     phase: 'pregnancy', priority: 'recommend', role: 'together', anchor: 'due',
     startOffset: -63, endOffset: -35,
     summary: '入院バッグの準備に加え、陣痛タクシーの登録、パパの職場への連絡方法、夜間に陣痛が来た時の動き方を夫婦で決めておきます。',
+    checklist: [
+      '陣痛タクシーの登録・番号共有',
+      '母子健康手帳・診察券・健康保険証',
+      '印鑑・筆記用具',
+      '前開きマタニティパジャマ（2〜3着）',
+      '産褥ショーツ・授乳用ブラ',
+      '洗面用具・スキンケア・リップクリーム',
+      '産褥パッド・お産用パッド',
+      'スマホの充電器・モバイルバッテリー',
+      '退院時の赤ちゃんの服・おくるみ',
+      '飲み物・ストローキャップ・軽食'
+    ],
     affiliate: [
       { url: 'https://www.amazon.co.jp/s?k=%E5%87%BA%E7%94%A3%E6%BA%96%E5%82%99+%E5%85%A5%E9%99%A2+%E3%83%9E%E3%82%BF%E3%83%8B%E3%83%86%E3%82%A3%E3%83%91%E3%82%B8%E3%83%A3%E3%83%9E&tag=milkkurumix02-22', label: '前開きマタニティパジャマ・産褥ショーツ', icon: '👜' }
     ]

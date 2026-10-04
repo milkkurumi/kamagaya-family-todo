@@ -43,6 +43,8 @@ export interface TaskDef {
   sourceLabel?: string
   /** アフィリエイトリンク等、おすすめ商品の提案 */
   affiliate?: { url: string; label: string; icon?: string }[]
+  /** 詳細チェックリスト（持ち物や買うものリスト） */
+  checklist?: string[]
   /** 第1子の家庭のみ対象 */
   firstChildOnly?: boolean
 }
@@ -57,6 +59,8 @@ export interface TaskState {
   assignee?: Assignee
   memo?: string
   calendarAdded?: boolean
+  /** チェックリストの完了状態（キーはアイテムの文字列） */
+  checklistState?: Record<string, boolean>
 }
 
 export interface Settings {
@@ -71,6 +75,8 @@ export interface Settings {
   configured?: boolean
   /** 保育園のお気に入りIDリスト */
   nurseryFavorites?: string[]
+  /** 保育園の見学メモ（キーは園のID） */
+  nurseryMemos?: Record<string, string>
 }
 
 export interface AppData {
