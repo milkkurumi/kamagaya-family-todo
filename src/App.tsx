@@ -8,6 +8,7 @@ import { buildIcs, downloadIcs } from './lib/calendar'
 import { TaskCard } from './components/TaskCard'
 import { SettingsPanel } from './components/SettingsPanel'
 import { NurseryList } from './components/NurseryList'
+import { Onboarding } from './components/Onboarding'
 
 type Tab = 'now' | 'timeline' | 'scheduled' | 'nursery'
 
@@ -16,6 +17,10 @@ export default function App() {
   const [shared, setShared] = useState<AppData | undefined>(readShared)
   const [tab, setTab] = useState<Tab>('now')
   const [showSettings, setShowSettings] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    const s = data.settings;
+    return !Boolean(s.configured || s.dueDate || s.birthDate);
+  })
   const [priorities, setPriorities] = useState<Priority[]>(['must', 'recommend', 'optional'])
   const [roles, setRoles] = useState<Role[]>(['papa', 'together', 'mama'])
   const [hideClosed, setHideClosed] = useState(true)
@@ -103,10 +108,18 @@ export default function App() {
   }
 
   if (!configured || showSettings) {
+    if (showOnboarding) {
+      return (
+        <div className="app">
+          <Header />
+          <Onboarding onComplete={() => setShowOnboarding(false)} />
+        </div>
+      )
+    }
+
     return (
       <div className="app">
         <Header />
-        {!configured && <Intro />}
         <SettingsPanel
           settings={settings}
           initial={!configured}
