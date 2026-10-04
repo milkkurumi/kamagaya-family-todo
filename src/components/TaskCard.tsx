@@ -112,7 +112,7 @@ export function TaskCard({ view, settings, onChange }: Props) {
 
           {task.affiliate && task.affiliate.length > 0 && (
             <div className="affiliates">
-              <strong>🛒 おすすめ・準備リスト</strong>
+              <strong>🛒 おすすめ・準備リスト <small style={{ fontWeight: 400, color: '#888' }}>PR</small></strong>
               <ul>
                 {task.affiliate.map((a, i) => (
                   <li key={i}>

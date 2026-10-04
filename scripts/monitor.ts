@@ -65,7 +65,7 @@ ${tasksCode.slice(0, 20000)} // トークン節約のため一部
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3.1-pro',
+      model: 'gemini-3.1-pro-preview',
       contents: prompt,
     });
     

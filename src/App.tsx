@@ -257,6 +257,9 @@ export default function App() {
         <p>
           掲載情報は鎌ケ谷市子育て応援サイト「かまっこ応援団」等をもとに2026年10月時点で作成しています。手続きの詳細は各タスクの公式情報リンクからご確認ください。
         </p>
+        <p>
+          Amazonのアソシエイトとして、かまがや親子カレンダーは適格販売により収入を得ています。「🛒 おすすめ・準備リスト」のリンクは広告（アフィリエイトリンク）です。
+        </p>
       </footer>
       {toast && <div className="toast">{toast}</div>}
     </div>
@@ -272,22 +275,6 @@ function Header({ children }: { children?: React.ReactNode }) {
       </div>
       <div className="header-actions">{children}</div>
     </header>
-  )
-}
-
-function Intro() {
-  return (
-    <section className="intro">
-      <p>
-        鎌ケ谷市の<strong>妊活〜小学校入学前</strong>の手続き・健診・助成を、出産予定日や生年月日から自動で並べます。
-        夫婦で「行く日」を決めたものだけを、ワンクリックでGoogleカレンダーへ。
-      </p>
-      <ul>
-        <li>🧔 パパ単独OKのタスクがひと目でわかる</li>
-        <li>📍 市役所・保健センターの窓口と持ち物つき</li>
-        <li>🔗 ログイン不要。リンクで夫婦に共有</li>
-      </ul>
-    </section>
   )
 }
 

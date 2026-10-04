@@ -1,87 +1,47 @@
-export type NurseryType = '認可保育園' | '認定こども園' | '小規模保育';
+export type NurseryType = '市立保育園' | '私立保育園' | '認定こども園' | '小規模保育'
 
 export interface Nursery {
-  id: string;
-  name: string;
-  type: NurseryType;
-  address: string;
-  capacity: number;
-  openHours: string;
-  extendedHours: boolean;
-  url?: string;
-  note?: string;
+  id: string
+  name: string
+  type: NurseryType
+  note?: string
 }
 
+/**
+ * 鎌ケ谷市の保育施設（施設名・種別のみ）。
+ * 住所・定員・開園時間・空き状況は変動するため、地図リンクと市の公式情報で確認してもらう。
+ * 出典: 鎌ケ谷市公式ホームページ 保育施設一覧（2026年10月確認）
+ */
 export const NURSERIES: Nursery[] = [
-  {
-    id: 'awano',
-    name: '粟野保育園',
-    type: '認可保育園',
-    address: '鎌ケ谷市粟野410-1',
-    capacity: 120,
-    openHours: '7:00 - 19:00',
-    extendedHours: true,
-    note: '公立。広い園庭が特徴。',
-  },
-  {
-    id: 'michinobe',
-    name: '道野辺保育園',
-    type: '認可保育園',
-    address: '鎌ケ谷市道野辺中央2-8-36',
-    capacity: 90,
-    openHours: '7:00 - 19:00',
-    extendedHours: true,
-    note: '公立。鎌ケ谷駅近く。',
-  },
-  {
-    id: 'kamagaya',
-    name: '鎌ケ谷保育園',
-    type: '認可保育園',
-    address: '鎌ケ谷市鎌ケ谷4-6-63',
-    capacity: 100,
-    openHours: '7:00 - 19:00',
-    extendedHours: true,
-    note: '公立。大仏駅徒歩圏内。',
-  },
-  {
-    id: 'michiru',
-    name: 'みちる保育園',
-    type: '認可保育園',
-    address: '鎌ケ谷市初富808-54',
-    capacity: 150,
-    openHours: '7:00 - 19:00',
-    extendedHours: true,
-    note: '私立。食育に力を入れている。',
-    url: 'https://michiru.ed.jp/'
-  },
-  {
-    id: 'midori',
-    name: 'かまがやみどり保育園',
-    type: '認可保育園',
-    address: '鎌ケ谷市右京塚8-1',
-    capacity: 90,
-    openHours: '7:00 - 19:00',
-    extendedHours: true,
-    note: '私立。自然とのふれあいを重視。',
-  },
-  {
-    id: 'kamagaya-fuji',
-    name: '鎌ケ谷ふじ幼稚園（認定こども園）',
-    type: '認定こども園',
-    address: '鎌ケ谷市東初富1-16-36',
-    capacity: 250,
-    openHours: '7:00 - 19:00',
-    extendedHours: true,
-    note: '幼稚園型の認定こども園。教育プログラムが充実。',
-  },
-  {
-    id: 'little-bear',
-    name: 'リトルベアークラブ',
-    type: '小規模保育',
-    address: '鎌ケ谷市新鎌ケ谷1-18-5',
-    capacity: 19,
-    openHours: '7:30 - 18:30',
-    extendedHours: false,
-    note: '新鎌ヶ谷駅近く。0〜2歳児対象。',
-  }
-];
+  { id: 'michinobe', name: '市立道野辺保育園', type: '市立保育園' },
+  { id: 'minamihatsutomi', name: '市立南初富保育園', type: '市立保育園' },
+  { id: 'awano', name: '市立粟野保育園', type: '市立保育園' },
+  { id: 'kamagaya', name: '市立鎌ケ谷保育園', type: '市立保育園' },
+
+  { id: 'fujinoko', name: 'ふじのこ保育園', type: '私立保育園' },
+  { id: 'risunoko', name: 'りすのこ園', type: '私立保育園', note: 'ふじのこ保育園の分園' },
+  { id: 'oozora', name: 'おおぞら保育園', type: '私立保育園' },
+  { id: 'maruyama', name: 'まるやま保育園', type: '私立保育園' },
+  { id: 'picorail', name: 'まなびの森 鎌ケ谷ピコレール保育園', type: '私立保育園' },
+  { id: 'sukusuku', name: 'すくすくの杜鎌ケ谷園', type: '私立保育園' },
+  { id: 'takashi-shinkama', name: 'たかし保育園新鎌ケ谷', type: '私立保育園' },
+  { id: 'takashi-daibutsu', name: 'たかし保育園鎌ケ谷大仏', type: '私立保育園' },
+  { id: 'ks-garden', name: "K's garden 鎌ケ谷保育園", type: '私立保育園' },
+
+  { id: 'fuji-kg', name: '鎌ケ谷ふじ幼稚園', type: '認定こども園' },
+  { id: 'midori-kg', name: '鎌ヶ谷みどり幼稚園', type: '認定こども園' },
+
+  { id: 'athome-hoshinoko', name: 'あっとほーむママ・ほしのこ', type: '小規模保育' },
+  { id: 'athome-nijinoko', name: 'あっとほーむママ・にじのこ', type: '小規模保育' },
+  { id: 'michiru-kids', name: 'みちるkids園', type: '小規模保育' },
+  { id: 'hatsutomi-smile', name: '初富スマイルキッズ', type: '小規模保育' },
+  { id: 'futaba', name: 'ふたば園', type: '小規模保育' },
+  { id: 'kurumi', name: 'くるみ園', type: '小規模保育' },
+  { id: 'angel-hatsutomi', name: 'えんぜるナーサリー初富', type: '小規模保育' },
+  { id: 'burea-shinkama', name: 'ぶれあ保育園・新鎌ケ谷', type: '小規模保育' },
+  { id: 'skuld-shinkama', name: 'スクルドエンジェル保育園新鎌ケ谷園', type: '小規模保育' },
+  { id: 'skuld-daibutsu', name: 'スクルドエンジェル保育園鎌ケ谷大仏園', type: '小規模保育' },
+]
+
+export const mapUrl = (name: string) =>
+  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${name} 鎌ケ谷市`)}`
