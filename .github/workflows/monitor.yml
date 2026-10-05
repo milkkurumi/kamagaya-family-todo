@@ -6,6 +6,10 @@ on:
     - cron: '0 0 * * 1'
   workflow_dispatch: # 手動実行用ボタンも有効化
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   check-updates:
     runs-on: ubuntu-latest
@@ -22,6 +26,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Verify URLs
+        run: npm run test:urls
 
       - name: Run Gemini 3.1 Pro Monitoring Script
         env:
