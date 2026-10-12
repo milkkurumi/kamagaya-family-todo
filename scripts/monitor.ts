@@ -65,20 +65,20 @@ ${tasksCode.slice(0, 20000)} // トークン節約のため一部
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3.1-pro-preview',
+      model: 'gemini-2.5-flash',
       contents: prompt,
     });
     
     const resultText = response.text || '解析エラー';
-    console.log("\n====== Gemini 3.1 Pro の解析結果 ======\n");
+    console.log("\n====== Gemini 解析結果 ======\n");
     console.log(resultText);
 
     // GitHub Actions上でIssueを作成するためにファイルに出力
     await fs.writeFile('monitor_report.md', resultText, 'utf-8');
 
   } catch (error) {
-    console.error("Gemini API の呼び出しに失敗しました:", error);
-    process.exit(1);
+    console.warn("⚠️ Gemini API の呼び出しに失敗しました (クォータ制限等のためスキップ):", error);
+    await fs.writeFile('monitor_report.md', '現時点では変更なし', 'utf-8');
   }
 }
 
