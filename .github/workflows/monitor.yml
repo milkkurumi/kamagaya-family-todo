@@ -38,7 +38,7 @@ jobs:
       - name: Check if report has updates
         id: check
         run: |
-          if grep -q "現時点では変更なし" monitor_report.md; then
+          if [ "$(tr -d '[:space:]' < monitor_report.md)" = "NO_CHANGE" ]; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
           else
             echo "has_changes=true" >> $GITHUB_OUTPUT

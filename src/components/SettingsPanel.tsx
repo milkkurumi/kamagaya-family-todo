@@ -62,6 +62,19 @@ export function SettingsPanel({ settings, onSave, onClose, onReset, initial }: P
       </label>
 
       <details open={!initial}>
+        <summary>緊急連絡先（任意）</summary>
+        <p className="hint">陣痛時にトップ画面からワンタップで電話できます。この端末のブラウザ内にのみ保存されます。</p>
+        <label>
+          産院の電話番号
+          <input type="tel" value={s.emergencyContacts?.hospital ?? ''} placeholder="047-000-0000" onChange={(e) => set({ emergencyContacts: { ...s.emergencyContacts, hospital: e.target.value || undefined } })} />
+        </label>
+        <label>
+          陣痛タクシーの電話番号
+          <input type="tel" value={s.emergencyContacts?.taxi ?? ''} placeholder="047-000-0000" onChange={(e) => set({ emergencyContacts: { ...s.emergencyContacts, taxi: e.target.value || undefined } })} />
+        </label>
+      </details>
+
+      <details open={!initial}>
         <summary>夫婦のカレンダー連携（任意）</summary>
         <p className="hint">
           入力すると「Googleカレンダーに追加」時に2人をゲスト招待した状態で予定作成画面が開き、夫婦両方のカレンダーに入ります。メールアドレスはこの端末のブラウザ内にのみ保存されます。

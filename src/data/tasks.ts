@@ -586,4 +586,12 @@ export const TASKS: TaskDef[] = [
     summary: '共働きなら小学校入学後の放課後の居場所を確保しておきましょう。「小1の壁」対策として、夏休みの利用時間なども確認を。',
     ...SRC.gakudo,
   },
+  {
+    id: 'postpartum-chores',
+    title: '【産後のシミュレーション】家事・育児分担の取り決め',
+    phase: 'pregnancy', priority: 'must', role: 'together', anchor: 'due',
+    startOffset: -60, endOffset: -14,
+    summary: '出産前に、産後の家事・育児の担当を夫婦で話し合って決めておきましょう。',
+    checklist: ['夜間のミルク・おむつ替え', '沐浴', '大人の食事の準備', '洗濯・掃除', '買い出し', '上の子の世話（いる場合）', '来客・手続きの窓口'],
+  },
 ]

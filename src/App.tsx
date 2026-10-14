@@ -9,8 +9,9 @@ import { TaskCard } from './components/TaskCard'
 import { SettingsPanel } from './components/SettingsPanel'
 import { NurseryList } from './components/NurseryList'
 import { Onboarding } from './components/Onboarding'
+import { MoneySimulation } from './components/MoneySimulation'
 
-type Tab = 'now' | 'timeline' | 'scheduled' | 'nursery'
+type Tab = 'now' | 'timeline' | 'scheduled' | 'nursery' | 'money'
 
 export default function App() {
   const [data, setData] = useState<AppData>(load)
@@ -181,6 +182,27 @@ export default function App() {
         </div>
       </section>
 
+      <section style={{ margin: '0.5rem 0', padding: '0.8rem', background: '#ffebee', border: '1px solid #ef9a9a', borderRadius: '10px', fontSize: '0.9rem' }}>
+        <div style={{ fontWeight: 'bold', color: '#c62828', marginBottom: '0.4rem' }}>🚨 陣痛・緊急時の連絡先</div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
+          <span>🏥 産院:</span>
+          <a href={`tel:${settings.emergencyContacts?.hospital || ''}`} style={{ fontWeight: 'bold', color: '#c62828', textDecoration: 'none' }}>
+            {settings.emergencyContacts?.hospital || '未登録'}
+          </a>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span>🚕 陣痛タクシー:</span>
+          <a href={`tel:${settings.emergencyContacts?.taxi || ''}`} style={{ fontWeight: 'bold', color: '#c62828', textDecoration: 'none' }}>
+            {settings.emergencyContacts?.taxi || '未登録'}
+          </a>
+        </div>
+        {(!settings.emergencyContacts?.hospital || !settings.emergencyContacts?.taxi) && (
+          <button onClick={() => setShowSettings(true)} style={{ marginTop: '0.5rem', width: '100%', padding: '0.4rem', fontSize: '0.8rem', background: '#fff', border: '1px solid #c62828', color: '#c62828', borderRadius: '4px', cursor: 'pointer' }}>
+            設定する
+          </button>
+        )}
+      </section>
+
       <nav className="tabs">
         {(
           [
@@ -188,6 +210,7 @@ export default function App() {
             ['timeline', 'ぜんぶ見る'],
             ['scheduled', `予定（${upcomingScheduled.length}）`],
             ['nursery', '保活・保育園'],
+            ['money', '💰 お金'],
           ] as const
         ).map(([k, l]) => (
           <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>
@@ -196,7 +219,7 @@ export default function App() {
         ))}
       </nav>
 
-      {tab !== 'scheduled' && tab !== 'nursery' && (
+      {tab !== 'scheduled' && tab !== 'nursery' && tab !== 'money' && (
         <section className="filters">
           <button
             className={`papa-mode ${papaMode ? 'on' : ''}`}
@@ -251,6 +274,7 @@ export default function App() {
           </section>
         )}
         {tab === 'nursery' && <NurseryList settings={settings} onUpdateSettings={saveSettings} />}
+        {tab === 'money' && <MoneySimulation settings={settings} onUpdateSettings={saveSettings} />}
       </main>
 
       <footer>

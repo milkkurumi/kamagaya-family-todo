@@ -77,6 +77,10 @@ export interface Settings {
   nurseryFavorites?: string[]
   /** 保育園の見学メモ（キーは園のID） */
   nurseryMemos?: Record<string, string>
+  /** 陣痛時などの緊急連絡先 */
+  emergencyContacts?: { hospital?: string; taxi?: string }
+  /** お金シミュレーションの入力値 */
+  budgetSettings?: { deliveryCost: number; babyGoods: number }
 }
 
 export interface AppData {
