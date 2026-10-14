@@ -61,16 +61,21 @@ async function fetchText(target: { name: string; url: string }): Promise<FetchRe
 
 async function generate(ai: GoogleGenAI, prompt: string): Promise<string> {
   let lastError: unknown;
+  const MAX_ATTEMPTS = 6;
   for (const model of MODELS) {
-    for (let attempt = 1; attempt <= 2; attempt++) {
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       try {
         console.log(`モデル ${model} で解析中 (試行 ${attempt})...`);
         const response = await ai.models.generateContent({ model, contents: prompt });
         return response.text || '';
-      } catch (e) {
+      } catch (e: any) {
         lastError = e;
-        console.warn(`⚠️ ${model} 失敗 (試行 ${attempt}):`, e);
-        await new Promise((r) => setTimeout(r, 3000));
+        const status = e?.status;
+        console.warn(`⚠️ ${model} 失敗 (試行 ${attempt}, status=${status})`);
+        // クォータ超過・提供終了は再試行しても無駄なので次のモデルへ
+        if (status === 429 || status === 404 || status === 400) break;
+        // 503/500 などの一時的な混雑は指数バックオフで再試行 (10s, 20s, 40s ...)
+        await new Promise((r) => setTimeout(r, 10000 * 2 ** (attempt - 1)));
       }
     }
   }
