@@ -106,3 +106,21 @@ export function ageText(birth: Date, at: Date = today()): string | undefined {
   const m = months % 12
   return y > 0 ? `${y}歳${m}か月` : `${m}か月`
 }
+
+/** 日程決めのクイック選択候補（今週土曜・日曜、来週水曜・土曜） */
+export function quickDates(from: Date = today()): { label: string; date: Date; weekday: boolean }[] {
+  const dow = from.getDay()
+  const sat = addDays(from, (6 - dow + 7) % 7)
+  const sun = addDays(from, (7 - dow) % 7)
+  const nextMon = addDays(from, (8 - dow) % 7 || 7)
+  return [
+    { label: '今週土曜', date: sat, weekday: false },
+    { label: '今週日曜', date: sun, weekday: false },
+    { label: '来週水曜', date: addDays(nextMon, 2), weekday: true },
+    { label: '来週土曜', date: addDays(nextMon, 5), weekday: false },
+  ]
+}
+
+export function isWeekend(d: Date): boolean {
+  return d.getDay() === 0 || d.getDay() === 6
+}

@@ -1,15 +1,26 @@
 import { useState } from 'react'
 import type { Settings } from '../types'
+import type { TaskView } from '../lib/view'
 
 interface Props {
   settings: Settings
   onUpdateSettings: (newSettings: Settings) => void
+  views: TaskView[]
+  /** 該当タスクカードへジャンプ */
+  onJump: (taskId: string) => void
 }
 
 const card = { background: '#fff', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', marginBottom: '1.5rem' } as const
 const row = { display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '1rem' } as const
 
-export function MoneySimulation({ settings, onUpdateSettings }: Props) {
+const STATUS_BADGE = {
+  todo: { label: '未手続', cls: '' },
+  scheduled: { label: '📅 予定済', cls: 'scheduled' },
+  done: { label: '✅ 手続済', cls: 'done' },
+  skip: { label: '対象外', cls: '' },
+} as const
+
+export function MoneySimulation({ settings, onUpdateSettings, views, onJump }: Props) {
   const [deliveryCost, setDeliveryCost] = useState(settings.budgetSettings?.deliveryCost || 500000)
   const [babyGoods, setBabyGoods] = useState(settings.budgetSettings?.babyGoods || 150000)
 
@@ -32,14 +43,30 @@ export function MoneySimulation({ settings, onUpdateSettings }: Props) {
 
       <div style={card}>
         <h3 style={{ margin: '0 0 1rem 0', color: '#2b7055' }}>もらえるお金（収入）</h3>
-        <div style={row}>
-          <span>出産育児一時金:</span>
-          <strong>500,000円</strong>
-        </div>
-        <div style={row}>
-          <span>出産・子育て応援給付金（鎌ケ谷市）:</span>
-          <strong>100,000円</strong>
-        </div>
+        <p style={{ fontSize: '0.8rem', color: '#888', margin: '0 0 0.6rem' }}>タップすると、該当する手続きのタスクへ移動して日程を決められます。</p>
+        {[
+          { label: '出産育児一時金', amount: 500000, taskId: 'preg-direct-pay' },
+          { label: '出産応援給付金（妊娠時）', amount: 50000, taskId: 'preg-benefit1' },
+          { label: '子育て応援給付金（出生後）', amount: 50000, taskId: 'pp-benefit2' },
+        ].map((r) => {
+          const v = views.find((x) => x.task.id === r.taskId)
+          const st = v ? STATUS_BADGE[v.state.status] : undefined
+          return (
+            <button
+              key={r.taskId}
+              className="money-row"
+              onClick={() => v && onJump(r.taskId)}
+              disabled={!v}
+              title="手続きのタスクを開く"
+            >
+              <span>
+                {r.label}
+                {st && <span className={`st ${st.cls}`} style={{ marginLeft: '0.5rem' }}>{st.label}</span>}
+              </span>
+              <strong>{r.amount.toLocaleString()}円 ›</strong>
+            </button>
+          )
+        })}
         <div style={{ borderTop: '1px dashed #ccc', margin: '0.5rem 0' }}></div>
         <div style={{ display: 'flex', justifyContent: 'space-between', color: '#e53935', fontWeight: 'bold', fontSize: '1.1rem' }}>
           <span>合計支給額:</span>

@@ -26,6 +26,7 @@ export default function App() {
   const [roles, setRoles] = useState<Role[]>(['papa', 'together', 'mama'])
   const [hideClosed, setHideClosed] = useState(true)
   const [toast, setToast] = useState('')
+  const [focusId, setFocusId] = useState<string | undefined>()
 
   useEffect(() => save(data), [data])
   useEffect(() => {
@@ -53,6 +54,25 @@ export default function App() {
       ...d,
       tasks: { ...d.tasks, [id]: { ...(d.tasks[id] ?? { status: 'todo' }), ...patch } },
     }))
+
+  const bulkDone = (ids: string[]) =>
+    setData((d) => {
+      const tasks = { ...d.tasks }
+      ids.forEach((id) => {
+        tasks[id] = { ...(tasks[id] ?? { status: 'todo' }), status: 'done' }
+      })
+      return { ...d, tasks }
+    })
+
+  /** お金タブなどから該当タスクへ直行（フィルタを解除して開く） */
+  const jumpToTask = (id: string) => {
+    setPriorities(['must', 'recommend', 'optional'])
+    setRoles(['papa', 'together', 'mama'])
+    setHideClosed(false)
+    setFocusId(id)
+    setTab('timeline')
+    setTimeout(() => setFocusId(undefined), 2500)
+  }
 
   const saveSettings = (s: Settings) => {
     setData((d) => ({ ...d, settings: { ...s, configured: true } }))
@@ -255,8 +275,17 @@ export default function App() {
       )}
 
       <main>
-        {tab === 'now' && <NowList views={filtered} settings={settings} onChange={updateTask} prep={!due && !birth} />}
-        {tab === 'timeline' && <Timeline views={filtered} settings={settings} onChange={updateTask} />}
+        {tab === 'now' && (
+          <NowList
+            views={filtered}
+            settings={settings}
+            onChange={updateTask}
+            prep={!due && !birth}
+            focusId={focusId}
+            onBulkDone={bulkDone}
+          />
+        )}
+        {tab === 'timeline' && <Timeline views={filtered} settings={settings} onChange={updateTask} focusId={focusId} />}
         {tab === 'scheduled' && (
           <section>
             <div className="bulk">
@@ -268,13 +297,28 @@ export default function App() {
               </button>
             </div>
             {scheduled.length === 0 && <p className="empty">まだ日程が決まったタスクはありません。</p>}
-            {scheduled.map((v) => (
-              <TaskCard key={v.task.id} view={v} settings={settings} onChange={updateTask} />
-            ))}
+            {Array.from(new Set(scheduled.map((v) => v.state.date!))).map((d) => {
+              const day = parseDate(d)!
+              const isToday = day.getTime() === today().getTime()
+              const isPast = day < today()
+              return (
+                <div key={d}>
+                  <h2 className={`day-head ${isToday ? 'today' : ''} ${isPast ? 'past' : ''}`}>
+                    📅 {jp(day, true)}
+                    {isToday && ' ・今日'}
+                  </h2>
+                  {scheduled
+                    .filter((v) => v.state.date === d)
+                    .map((v) => (
+                      <TaskCard key={v.task.id} view={v} settings={settings} onChange={updateTask} />
+                    ))}
+                </div>
+              )
+            })}
           </section>
         )}
         {tab === 'nursery' && <NurseryList settings={settings} onUpdateSettings={saveSettings} />}
-        {tab === 'money' && <MoneySimulation settings={settings} onUpdateSettings={saveSettings} />}
+        {tab === 'money' && <MoneySimulation settings={settings} onUpdateSettings={saveSettings} views={views} onJump={jumpToTask} />}
       </main>
 
       <footer>
@@ -306,9 +350,17 @@ interface ListProps {
   views: TaskView[]
   settings: Settings
   onChange: (id: string, patch: Partial<TaskState>) => void
+  focusId?: string
 }
 
-function NowList({ views, settings, onChange, prep }: ListProps & { prep: boolean }) {
+function NowList({
+  views,
+  settings,
+  onChange,
+  prep,
+  focusId,
+  onBulkDone,
+}: ListProps & { prep: boolean; onBulkDone: (ids: string[]) => void }) {
   const groups: Timing[] = prep ? ['anytime'] : ['overdue', 'now', 'soon']
   const list = views.filter((v) => (prep ? v.task.phase === 'prep' : groups.includes(v.timing)))
   if (!list.length) return <p className="empty">いま対応が必要なタスクはありません 🎉 「ぜんぶ見る」で先の予定も確認できます。</p>
@@ -322,9 +374,21 @@ function NowList({ views, settings, onChange, prep }: ListProps & { prep: boolea
           <section key={g} className={`group g-${g}`}>
             <h2>
               {TIMING_LABEL[g]} <span className="count">{items.length}</span>
+              {g === 'overdue' && (
+                <button
+                  className="bulk-done"
+                  onClick={() => {
+                    if (confirm(`期限切れ・要確認の ${items.length} 件をすべて「完了」にします。よろしいですか？`)) {
+                      onBulkDone(items.map((v) => v.task.id))
+                    }
+                  }}
+                >
+                  ✅ 過去のタスクを一括完了
+                </button>
+              )}
             </h2>
             {items.map((v) => (
-              <TaskCard key={v.task.id} view={v} settings={settings} onChange={onChange} />
+              <TaskCard key={v.task.id} view={v} settings={settings} onChange={onChange} focused={focusId === v.task.id} />
             ))}
           </section>
         )
@@ -333,7 +397,7 @@ function NowList({ views, settings, onChange, prep }: ListProps & { prep: boolea
   )
 }
 
-function Timeline({ views, settings, onChange }: ListProps) {
+function Timeline({ views, settings, onChange, focusId }: ListProps) {
   return (
     <>
       {(Object.keys(PHASE) as Phase[]).map((p) => {
@@ -345,7 +409,7 @@ function Timeline({ views, settings, onChange }: ListProps) {
               {PHASE[p].icon} {PHASE[p].label} <span className="count">{items.length}</span>
             </h2>
             {items.map((v) => (
-              <TaskCard key={v.task.id} view={v} settings={settings} onChange={onChange} />
+              <TaskCard key={v.task.id} view={v} settings={settings} onChange={onChange} focused={focusId === v.task.id} />
             ))}
           </section>
         )

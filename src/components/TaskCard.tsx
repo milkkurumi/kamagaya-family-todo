@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Assignee, Settings, TaskState } from '../types'
-import { fmt, jp, parseDate, suggestedDate } from '../lib/date'
+import { fmt, isWeekend, jp, parseDate, quickDates, suggestedDate } from '../lib/date'
 import { buildIcs, downloadIcs, googleCalendarUrl } from '../lib/calendar'
 import { PRIORITY, ROLE, STATUS, type TaskView } from '../lib/view'
 
@@ -8,17 +8,32 @@ interface Props {
   view: TaskView
   settings: Settings
   onChange: (id: string, patch: Partial<TaskState>) => void
+  /** お金タブなどからジャンプしてきたとき、開いてスクロールする */
+  focused?: boolean
 }
 
-export function TaskCard({ view, settings, onChange }: Props) {
+const ASSIGNEE_LABEL: Record<string, string> = { papa: 'パパ', mama: 'ママ', both: '夫婦' }
+
+export function TaskCard({ view, settings, onChange, focused }: Props) {
   const { task, state, window: w, timing, daysLeft } = view
   const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLElement>(null)
   const suggested = suggestedDate(w)
   const [date, setDate] = useState(state.date ?? (suggested ? fmt(suggested) : ''))
   const [time, setTime] = useState(state.time ?? '')
   const closed = state.status === 'done' || state.status === 'skip'
 
+  useEffect(() => {
+    if (focused) {
+      setOpen(true)
+      ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [focused])
+
   const update = (patch: Partial<TaskState>) => onChange(task.id, patch)
+
+  const toggleQuickDone = () =>
+    update({ status: state.status === 'done' ? (state.date ? 'scheduled' : 'todo') : 'done' })
 
   const toggleChecklist = (item: string) => {
     const current = state.checklistState || {}
@@ -47,7 +62,16 @@ export function TaskCard({ view, settings, onChange }: Props) {
   }
 
   return (
-    <article className={`card p-${task.priority} t-${timing} ${closed ? 'closed' : ''}`}>
+    <article ref={ref} className={`card p-${task.priority} t-${timing} ${closed ? 'closed' : ''}`}>
+      <div className="card-top">
+      <button
+        className={`quick-done ${state.status === 'done' ? 'on' : ''}`}
+        onClick={toggleQuickDone}
+        aria-label={state.status === 'done' ? '完了を取り消す' : '完了にする'}
+        title={state.status === 'done' ? '完了を取り消す' : 'ワンタップで完了'}
+      >
+        {state.status === 'done' ? '✓' : ''}
+      </button>
       <button className="card-head" onClick={() => setOpen(!open)} aria-expanded={open}>
         <div className="badges">
           <span className={`badge pri-${task.priority}`}>{PRIORITY[task.priority].short}</span>
@@ -79,9 +103,14 @@ export function TaskCard({ view, settings, onChange }: Props) {
               {state.calendarAdded && ' ✓カレンダー登録済'}
             </span>
           )}
+          {state.date && (
+            <span className="who">👤 {ASSIGNEE_LABEL[state.assignee ?? ''] ?? '担当未定'}</span>
+          )}
+          {state.date && task.place && <span className="where">📍 {task.place}</span>}
         </div>
         <span className="chev">{open ? '▲' : '▼'}</span>
       </button>
+      </div>
 
       {open && (
         <div className="card-body">
@@ -185,6 +214,22 @@ export function TaskCard({ view, settings, onChange }: Props) {
               </p>
             )}
             {outOfWindow && <p className="hint warn">推奨期間の外の日付です</p>}
+            <div className="quick-dates">
+              {quickDates().map((q) => (
+                <button
+                  key={q.label}
+                  type="button"
+                  className={`chip ${date === fmt(q.date) ? 'on' : ''}`}
+                  onClick={() => setDate(fmt(q.date))}
+                >
+                  {q.label}
+                  {q.weekday ? '（平日）' : ''} {jp(q.date)}
+                </button>
+              ))}
+            </div>
+            {task.place && date && isWeekend(parseDate(date)!) && (
+              <p className="hint warn">※窓口は平日の開庁時間のみの場合があります。事前に公式情報をご確認ください</p>
+            )}
             <label className="memo">
               メモ（夫婦間の申し送りなど）
               <textarea
