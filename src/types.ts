@@ -89,9 +89,15 @@ export interface Settings {
   configured?: boolean
   /** 保育園のお気に入りIDリスト */
   nurseryFavorites?: string[]
+  /** 保育園の希望順位（キーは園のID、値は '1'〜'6' または 'sub'） */
+  nurseryRanks?: Record<string, string>
+  /** 保育園の見学ステータス（キーは園のID、値は 'none' | 'reserved' | 'visited'） */
+  nurseryTourStatuses?: Record<string, 'none' | 'reserved' | 'visited'>
+  /** 保育園の見学日・予約日（キーは園のID） */
+  nurseryTourDates?: Record<string, string>
   /** 保育園の見学メモ（キーは園のID） */
   nurseryMemos?: Record<string, string>
-  /** 保育園の比較タグ（キーは園のID、値はタグ配列） */
+  /** 保育園の比較チェック項目（キーは園のID、値はタグ配列） */
   nurseryTags?: Record<string, string[]>
   /** ユーザーが追加したカスタム保育施設 */
   customNurseries?: CustomNurseryItem[]

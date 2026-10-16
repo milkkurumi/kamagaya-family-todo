@@ -1,11 +1,14 @@
-import { NURSERIES } from '../src/data/nurseries.js';
+import { NURSERIES, HOKATSU_GUIDE } from '../src/data/nurseries.js';
 
 async function checkUrls() {
   const urls = new Set<string>();
-  
-  // 保育園のURLを収集
+
   for (const n of NURSERIES) {
     if (n.url) urls.add(n.url);
+    if (n.cityUrl) urls.add(n.cityUrl);
+  }
+  for (const link of HOKATSU_GUIDE.officialLinks) {
+    if (link.url) urls.add(link.url);
   }
 
   console.log(`Checking ${urls.size} URLs...`);
@@ -15,10 +18,10 @@ async function checkUrls() {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
-      const res = await fetch(url, { 
-        method: 'GET', 
+      const res = await fetch(url, {
+        method: 'GET',
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
-        signal: controller.signal
+        signal: controller.signal,
       });
       clearTimeout(timeoutId);
 
