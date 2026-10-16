@@ -1,8 +1,12 @@
 import { NURSERIES, HOKATSU_GUIDE } from '../src/data/nurseries.js';
+import { TASKS } from '../src/data/tasks.js';
 
 async function checkUrls() {
   const urls = new Set<string>();
 
+  for (const t of TASKS) {
+    if (t.sourceUrl) urls.add(t.sourceUrl);
+  }
   for (const n of NURSERIES) {
     if (n.url) urls.add(n.url);
     if (n.cityUrl) urls.add(n.cityUrl);
@@ -11,13 +15,13 @@ async function checkUrls() {
     if (link.url) urls.add(link.url);
   }
 
-  console.log(`Checking ${urls.size} URLs...`);
+  console.log(`Checking ${urls.size} URLs (tasks.ts + nurseries.ts)...`);
   let hasError = false;
 
   for (const url of urls) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
       const res = await fetch(url, {
         method: 'GET',
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
