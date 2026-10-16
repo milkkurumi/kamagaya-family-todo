@@ -5,6 +5,7 @@ import 'dotenv/config';
 
 const K = 'https://kamakko.info';
 const NOTE_ARTICLE_URL = 'https://note.com/tamanegi_tomato/n/n3fdde1baf79b';
+const NOTE_EDIT_URL = 'https://editor.note.com/notes/n3fdde1baf79b/edit/';
 
 // 監視するURLリスト（国・県・市）。アプリ内の制度情報（tasks.ts / nurseries.ts / MoneySimulation.tsx）の根拠ページを対象にする
 const TARGET_URLS = [
@@ -132,7 +133,7 @@ async function runMonitor() {
 - 現在のコードの記述と明確に食い違う点だけを報告してください。確証のない推測は書かないでください。
 - 変更があれば、以下の2つのセクションに分けて具体的にMarkdownで出力してください：
   1. **アプリコード修正箇所**：どのファイル（tasks.ts / nurseries.ts / MoneySimulation.tsx）のどのID・項目をどう修正すべきか（根拠ページ名つき）
-  2. **note記事（${NOTE_ARTICLE_URL}）の更新用テキスト案**：アプリ更新に合わせてnoteの紹介記事のどの部分をどう書き換えるか（または追記するか）の具体的な文面
+  2. **note記事の更新用テキスト案**（公開URL: ${NOTE_ARTICLE_URL} ／ 編集画面: ${NOTE_EDIT_URL}）：アプリ更新に合わせてnote記事のどのセクションをどう書き換えるか（または追記するか）の具体的な文面
 - 変更がなければ、${NO_CHANGE_MARKER} とだけ出力してください。それ以外の文章は付けないでください。
 
 === ウェブサイト最新情報 ===
