@@ -47,6 +47,8 @@ export interface TaskDef {
   checklist?: string[]
   /** 第1子の家庭のみ対象 */
   firstChildOnly?: boolean
+  /** ユーザーが追加したカスタムタスクかどうか */
+  custom?: boolean
 }
 
 export type Status = 'todo' | 'scheduled' | 'done' | 'skip'
@@ -63,6 +65,18 @@ export interface TaskState {
   checklistState?: Record<string, boolean>
 }
 
+export interface CustomNurseryItem {
+  id: string
+  name: string
+  type: string
+  area?: string
+  address?: string
+  station?: string
+  age?: string
+  note?: string
+  url?: string
+}
+
 export interface Settings {
   dueDate?: string
   birthDate?: string
@@ -77,10 +91,16 @@ export interface Settings {
   nurseryFavorites?: string[]
   /** 保育園の見学メモ（キーは園のID） */
   nurseryMemos?: Record<string, string>
+  /** 保育園の比較タグ（キーは園のID、値はタグ配列） */
+  nurseryTags?: Record<string, string[]>
+  /** ユーザーが追加したカスタム保育施設 */
+  customNurseries?: CustomNurseryItem[]
+  /** ユーザーが追加したカスタムタスク */
+  customTasks?: TaskDef[]
   /** 陣痛時などの緊急連絡先 */
   emergencyContacts?: { hospital?: string; taxi?: string }
   /** お金シミュレーションの入力値 */
-  budgetSettings?: { deliveryCost: number; babyGoods: number }
+  budgetSettings?: { deliveryCost: number; babyGoods: number; checkupPocket?: number; taxRate?: number }
 }
 
 export interface AppData {

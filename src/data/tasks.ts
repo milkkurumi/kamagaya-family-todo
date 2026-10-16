@@ -69,6 +69,17 @@ export const TASKS: TaskDef[] = [
 
   // ───────────── 妊娠期 ─────────────
   {
+    id: 'preg-first-visit',
+    title: '初回産科受診料の助成を確認（非課税世帯等）',
+    phase: 'pregnancy', priority: 'optional', role: 'together', anchor: 'due',
+    startOffset: wk(4), endOffset: wk(12),
+    summary: '住民税非課税世帯または同等の所得水準の世帯を対象に、妊娠判定のための初回産科受診料の一部を助成する制度があります。該当する場合は領収書・診療明細書を保管し、健康増進課へ相談してください。',
+    money: '初回産科受診料の一部助成（対象世帯のみ）',
+    place: KENKO,
+    bring: ['医療機関の領収書・診療明細書'],
+    ...SRC.pregnancy,
+  },
+  {
     id: 'preg-hospital',
     title: '出産する病院（産院）を決めて分娩予約',
     phase: 'pregnancy', priority: 'recommend', role: 'together', anchor: 'due',
@@ -80,11 +91,19 @@ export const TASKS: TaskDef[] = [
     title: '妊娠届を出して母子健康手帳をもらう',
     phase: 'pregnancy', priority: 'must', role: 'mama', anchor: 'due',
     startOffset: wk(6), endOffset: wk(11),
-    summary: '健康増進課の窓口で妊娠届を出し、保健師・助産師と面接します。妊婦健診14回分・産婦健診・1か月児健診の受診票、マタニティマークも一緒にもらえます。',
+    summary: '健康増進課の窓口で妊娠届を出し、保健師・助産師と面接します。妊婦健診14回分・妊婦歯科健診・産婦健診・1か月児健診の受診票、マタニティマークも一緒にもらえます。',
     place: '健康増進課（総合福祉保健センター2F窓口）TEL 047-445-1393',
     bring: ['妊婦本人のマイナンバーカード（ない場合は通知カード＋運転免許証等）', '妊娠届出書（市HPからPDFダウンロード可）'],
-    papaNote: '代理申請も可能。妊婦本人が全て直筆で書いた委任状＋妊婦のマイナンバーカード＋パパ本人の身分証が必要です。ただし面接は給付金の要件なので、体調が戻ったら本人の面接日を別途調整しましょう。',
+    papaNote: '代理申請も可能。妊婦本人が全て直筆で書いた委任状＋妊婦のマイナンバーカード＋パパ本人の身分証が必要です。面接は給付金の要件なので、体調が戻ったら本人の面接日を別途調整しましょう。',
     durationMin: 60,
+    ...SRC.pregnancy,
+  },
+  {
+    id: 'preg-sukusuku-app',
+    title: '母子手帳アプリ「かまっこすくすくアプリ」を登録',
+    phase: 'pregnancy', priority: 'recommend', role: 'together', anchor: 'due',
+    startOffset: wk(6), endOffset: wk(20),
+    summary: '鎌ケ谷市公式の母子手帳・予防接種スケジューラーアプリ（無料）です。妊娠中の体調記録や、産後の複雑な予防接種スケジュール管理、市からの子育てイベント通知を夫婦で共有できます。',
     ...SRC.pregnancy,
   },
   {
@@ -106,6 +125,18 @@ export const TASKS: TaskDef[] = [
     bring: ['母子健康手帳', '受診票（別冊1）', '健康保険の資格確認書類（マイナ保険証等）'],
     papaNote: '妊娠初期の健診やエコーの日はパパも休みを取って同行するのがおすすめ。',
     durationMin: 120,
+    ...SRC.checkup,
+  },
+  {
+    id: 'preg-dental',
+    title: '妊婦歯科健康診査を受診（安定期の1回無料）',
+    phase: 'pregnancy', priority: 'recommend', role: 'mama', anchor: 'due',
+    startOffset: wk(16), endOffset: wk(27),
+    summary: '母子健康手帳の交付時に配布される受診票を使い、市内の指定歯科医療機関で妊娠中に1回無料で歯科健診を受けられます。つわりが落ち着いた安定期（16〜27週頃）の受診が推奨されています。',
+    money: '無料（妊娠中に1回）',
+    place: '市内指定歯科医療機関（要予約）',
+    bring: ['母子健康手帳', '妊婦歯科健康診査受診票'],
+    durationMin: 60,
     ...SRC.checkup,
   },
   {
@@ -246,7 +277,7 @@ export const TASKS: TaskDef[] = [
     title: '産休・育休の申請と給付金の手続き',
     phase: 'pregnancy', priority: 'must', role: 'together', anchor: 'due',
     startOffset: -120, endOffset: -60,
-    summary: '【もらえるお金・免除】パパ・ママそれぞれの職場で「産休」「育休」の申請をします。あわせて「育児休業給付金」の受給や「社会保険料の免除」の手続きを勤務先の人事・総務に確認しましょう。',
+    summary: 'パパ・ママそれぞれの職場で産前産後休業・育児休業の申請を行います。あわせて育児休業給付金の受給手続きや社会保険料（健康保険・厚生年金）免除の手続きを勤務先の人事・総務に確認しましょう。',
     papaNote: 'パパの育休（産後パパ育休含む）は早めに職場に相談し、手取りがどう変わるかシミュレーションを。',
     affiliate: [
       { url: 'https://www.amazon.co.jp/s?k=%E8%82%B2%E4%BC%91+%E3%81%8A%E9%87%91+%E6%9C%AC&tag=milkkurumix02-22', label: '育休・もらえるお金がわかる本（制度の損得を学ぶ）', icon: '📚' }
@@ -257,7 +288,7 @@ export const TASKS: TaskDef[] = [
     title: 'もらえるお金・助成金の総チェック',
     phase: 'pregnancy', priority: 'recommend', role: 'together', anchor: 'due',
     startOffset: -60, endOffset: -14,
-    summary: '【チェックリスト】①出産育児一時金（原則50万円/産院で直接支払）、②出産・子育て応援交付金（計10万円/市）、③児童手当（国）、④育児休業給付金（雇用保険）。漏れがないか夫婦で把握しておきましょう。',
+    summary: '出産育児一時金（原則50万円／直接支払制度）、妊婦のための支援給付金（計10万円／鎌ケ谷市）、児童手当、出産手当金・育児休業給付金の申請時期と提出先を夫婦で確認しておきましょう。「お金・助成金」タブで一覧管理できます。',
   },
 
   // ───────────── 産後〜生後2か月 ─────────────
@@ -379,6 +410,13 @@ export const TASKS: TaskDef[] = [
     place: '保険年金課 国民年金係 TEL 047-445-1209',
     ...SRC.born,
   },
+  {
+    id: 'pp-events',
+    title: 'お宮参り・百日祝い（お食い初め）の日程相談',
+    phase: 'postpartum', priority: 'optional', role: 'together', anchor: 'birth',
+    startOffset: 25, endOffset: 100,
+    summary: 'お宮参り（生後1か月頃・道野辺八幡宮など）や百日祝い・お食い初め（生後100日頃）を行う場合は、母子の体調を第一に考えながら両家の予定や写真撮影・会食の手配を相談しておきます。',
+  },
 
   // ───────────── 乳児期（〜1歳） ─────────────
   {
@@ -451,6 +489,16 @@ export const TASKS: TaskDef[] = [
     bring: ['申込書類一式', '就労証明書（夫婦それぞれ）'],
     papaNote: '就労証明書の依頼や書類のとりまとめはパパの担当にしやすいタスクです。',
     ...SRC.nursery,
+  },
+  {
+    id: 'inf-byoji-reg',
+    title: '病児・病後児保育の事前登録（パンダ保育室など）',
+    phase: 'infant', priority: 'recommend', role: 'together', anchor: 'birth',
+    startOffset: mo(5), endOffset: mo(12),
+    summary: '復職後に子どもが急な発熱などで登園できない時に備え、鎌ケ谷総合病院8階「パンダ保育室」（生後3か月〜小学6年生）などの病児・病後児保育施設に事前登録しておくと安心です。',
+    place: '鎌ケ谷総合病院 パンダ保育室（新鎌ケ谷2-12-1 8F）TEL 047-498-8111',
+    bring: ['登録申請書', '母子健康手帳', '健康保険の資格情報・子ども医療費助成受給券'],
+    ...SRC.hoiku,
   },
   {
     id: 'inf-bcg',
@@ -588,7 +636,7 @@ export const TASKS: TaskDef[] = [
   },
   {
     id: 'postpartum-chores',
-    title: '【産後のシミュレーション】家事・育児分担の取り決め',
+    title: '産後の家事・育児分担の取り決め',
     phase: 'pregnancy', priority: 'must', role: 'together', anchor: 'due',
     startOffset: -60, endOffset: -14,
     summary: '出産前に、産後の家事・育児の担当を夫婦で話し合って決めておきましょう。',

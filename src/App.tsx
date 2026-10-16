@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { AppData, Phase, Priority, Role, Settings, TaskState } from './types'
+import type { AppData, Phase, Priority, Role, Settings, TaskDef, TaskState } from './types'
 import { TASKS } from './data/tasks'
 import { EMPTY, clearHash, load, readShared, save, shareUrl } from './lib/storage'
 import { ageText, jp, parseDate, pregnancyWeek, today } from './lib/date'
@@ -18,9 +18,12 @@ export default function App() {
   const [shared, setShared] = useState<AppData | undefined>(readShared)
   const [tab, setTab] = useState<Tab>('now')
   const [showSettings, setShowSettings] = useState(false)
+  const [showEmergency, setShowEmergency] = useState(false)
+  const [showAddTask, setShowAddTask] = useState(false)
+  const [taskQuery, setTaskQuery] = useState('')
   const [showOnboarding, setShowOnboarding] = useState(() => {
-    const s = data.settings;
-    return !Boolean(s.configured || s.dueDate || s.birthDate);
+    const s = data.settings
+    return !Boolean(s.configured || s.dueDate || s.birthDate)
   })
   const [priorities, setPriorities] = useState<Priority[]>(['must', 'recommend', 'optional'])
   const [roles, setRoles] = useState<Role[]>(['papa', 'together', 'mama'])
@@ -28,10 +31,19 @@ export default function App() {
   const [toast, setToast] = useState('')
   const [focusId, setFocusId] = useState<string | undefined>()
 
+  // カスタムタスク入力用ステート
+  const [newTitle, setNewTitle] = useState('')
+  const [newPhase, setNewPhase] = useState<Phase>('pregnancy')
+  const [newPriority, setNewPriority] = useState<Priority>('recommend')
+  const [newRole, setNewRole] = useState<Role>('together')
+  const [newPlace, setNewPlace] = useState('')
+  const [newSummary, setNewSummary] = useState('')
+  const [newDate, setNewDate] = useState('')
+
   useEffect(() => save(data), [data])
   useEffect(() => {
     if (!toast) return
-    const id = setTimeout(() => setToast(''), 2500)
+    const id = setTimeout(() => setToast(''), 2600)
     return () => clearTimeout(id)
   }, [toast])
 
@@ -42,12 +54,17 @@ export default function App() {
 
   const views = useMemo(() => buildViews(TASKS, data.tasks, settings), [data.tasks, settings])
 
-  const filtered = views.filter(
-    (v) =>
-      priorities.includes(v.task.priority) &&
-      roles.includes(v.task.role) &&
-      !(hideClosed && (v.state.status === 'done' || v.state.status === 'skip')),
-  )
+  const filtered = views.filter((v) => {
+    if (!priorities.includes(v.task.priority)) return false
+    if (!roles.includes(v.task.role)) return false
+    if (hideClosed && (v.state.status === 'done' || v.state.status === 'skip')) return false
+    if (taskQuery.trim()) {
+      const q = taskQuery.trim().toLowerCase()
+      const hay = `${v.task.title} ${v.task.summary} ${v.task.place || ''} ${(v.task.bring || []).join(' ')} ${v.state.memo || ''}`.toLowerCase()
+      if (!hay.includes(q)) return false
+    }
+    return true
+  })
 
   const updateTask = (id: string, patch: Partial<TaskState>) =>
     setData((d) => ({
@@ -64,11 +81,52 @@ export default function App() {
       return { ...d, tasks }
     })
 
-  /** お金タブなどから該当タスクへ直行（フィルタを解除して開く） */
+  const addCustomTask = () => {
+    if (!newTitle.trim()) return
+    const id = `custom-task-${Date.now()}`
+    const def: TaskDef = {
+      id,
+      title: newTitle.trim(),
+      phase: newPhase,
+      priority: newPriority,
+      role: newRole,
+      anchor: 'none',
+      summary: newSummary.trim() || '夫婦で追加したオリジナルタスクです。',
+      place: newPlace.trim() || undefined,
+      custom: true,
+    }
+    const nextCustom = [def, ...(settings.customTasks || [])]
+    const nextTasks = { ...data.tasks }
+    if (newDate) {
+      nextTasks[id] = { status: 'scheduled', date: newDate }
+    }
+    setData((d) => ({
+      ...d,
+      settings: { ...d.settings, customTasks: nextCustom },
+      tasks: nextTasks,
+    }))
+    setNewTitle('')
+    setNewPlace('')
+    setNewSummary('')
+    setNewDate('')
+    setShowAddTask(false)
+    setToast('タスクを追加しました')
+  }
+
+  const deleteCustomTask = (id: string) => {
+    const nextCustom = (settings.customTasks || []).filter((t) => t.id !== id)
+    setData((d) => ({
+      ...d,
+      settings: { ...d.settings, customTasks: nextCustom },
+    }))
+    setToast('追加タスクを削除しました')
+  }
+
   const jumpToTask = (id: string) => {
     setPriorities(['must', 'recommend', 'optional'])
     setRoles(['papa', 'together', 'mama'])
     setHideClosed(false)
+    setTaskQuery('')
     setFocusId(id)
     setTab('timeline')
     setTimeout(() => setFocusId(undefined), 2500)
@@ -88,20 +146,19 @@ export default function App() {
     const url = shareUrl(data)
     try {
       await navigator.clipboard.writeText(url)
-      setToast('共有リンクをコピーしました。LINEなどでパートナーに送ってください')
+      setToast('共有リンクをコピーしました。LINE等でパートナーに送信してください')
     } catch {
       prompt('このリンクをパートナーに送ってください', url)
     }
   }
 
-  // 共有リンクから開いた場合の取り込み確認
   if (shared) {
     return (
       <div className="app">
         <Header />
         <section className="settings">
           <h2>パートナーから共有されたデータがあります</h2>
-          <p>取り込むと、この端末の進捗・予定・設定が共有内容で上書きされます。</p>
+          <p className="hint">取り込むと、この端末の進捗・予定・設定が共有内容で更新されます。</p>
           <div className="actions">
             <button
               className="primary"
@@ -112,7 +169,7 @@ export default function App() {
                 setToast('共有データを取り込みました')
               }}
             >
-              取り込む
+              データを取り込む
             </button>
             <button
               onClick={() => {
@@ -120,7 +177,7 @@ export default function App() {
                 clearHash()
               }}
             >
-              取り込まない
+              キャンセル
             </button>
           </div>
         </section>
@@ -162,13 +219,13 @@ export default function App() {
   }
 
   const stageText = birth
-    ? `${settings.childName ?? 'お子さま'} ${ageText(birth) ?? ''}`
+    ? `${settings.childName ? `${settings.childName}（` : ''}${ageText(birth) ?? '出産後'}${settings.childName ? '）' : ''}・生年月日 ${jp(birth, true)}`
     : due
       ? (() => {
           const pw = pregnancyWeek(due)
-          return `妊娠${pw ? `${pw.w}週${pw.d}日` : '中'}・予定日 ${jp(due, true)}`
+          return `妊娠${pw ? `${pw.w}週${pw.d}日` : '中'}（出産予定日：${jp(due, true)}）`
         })()
-      : '妊活中'
+      : '妊活・準備期'
 
   const scheduled = views
     .filter((v) => v.state.date && v.state.status !== 'skip')
@@ -178,79 +235,221 @@ export default function App() {
   const mustOpen = views.filter(
     (v) => v.task.priority === 'must' && (v.timing === 'now' || v.timing === 'overdue') && v.state.status === 'todo',
   ).length
+  const doneCount = views.filter((v) => v.state.status === 'done').length
 
   return (
     <div className="app">
       <Header>
-        <button className="icon" onClick={copyShare} title="パートナーと共有">
-          🔗 共有
+        <button
+          type="button"
+          className={`header-btn emergency-toggle ${showEmergency ? 'on' : ''}`}
+          onClick={() => setShowEmergency(!showEmergency)}
+        >
+          緊急・相談窓口
         </button>
-        <button className="icon" onClick={() => setShowSettings(true)} title="設定">
-          ⚙️
+        <button type="button" className="header-btn" onClick={copyShare}>
+          共有リンク
+        </button>
+        <button type="button" className="header-btn" onClick={() => setShowSettings(true)}>
+          設定
         </button>
       </Header>
 
+      {showEmergency && (
+        <section className="emergency-panel">
+          <div className="emergency-head">
+            <strong>陣痛・急病・鎌ケ谷市の相談窓口（タップで電話発信）</strong>
+            <button type="button" className="ghost small-btn" onClick={() => setShowEmergency(false)}>
+              閉じる
+            </button>
+          </div>
+          <div className="emergency-grid">
+            <div className="emergency-card user-contact">
+              <span className="em-label">登録済みの産院</span>
+              {settings.emergencyContacts?.hospital ? (
+                <a href={`tel:${settings.emergencyContacts.hospital}`} className="em-tel">
+                  {settings.emergencyContacts.hospital}
+                </a>
+              ) : (
+                <button type="button" className="btn-inline" onClick={() => setShowSettings(true)}>
+                  設定から電話番号を登録
+                </button>
+              )}
+            </div>
+            <div className="emergency-card user-contact">
+              <span className="em-label">登録済みの陣痛タクシー</span>
+              {settings.emergencyContacts?.taxi ? (
+                <a href={`tel:${settings.emergencyContacts.taxi}`} className="em-tel">
+                  {settings.emergencyContacts.taxi}
+                </a>
+              ) : (
+                <button type="button" className="btn-inline" onClick={() => setShowSettings(true)}>
+                  設定から電話番号を登録
+                </button>
+              )}
+            </div>
+            <div className="emergency-card">
+              <span className="em-label">千葉県こども急病電話相談（毎日19時〜翌8時）</span>
+              <a href="tel:043-242-9939" className="em-tel">
+                #8000 / 043-242-9939
+              </a>
+            </div>
+            <div className="emergency-card">
+              <span className="em-label">鎌ケ谷市 休日当番医案内テレホン（テープ案内）</span>
+              <a href="tel:047-445-2300" className="em-tel">
+                047-445-2300
+              </a>
+            </div>
+            <div className="emergency-card">
+              <span className="em-label">健康増進課 母子保健係（平日8:30〜17:00）</span>
+              <a href="tel:047-445-1393" className="em-tel">
+                047-445-1393
+              </a>
+            </div>
+            <div className="emergency-card">
+              <span className="em-label">市内救急病院（鎌ケ谷総合病院 / 東邦鎌谷病院）</span>
+              <div className="em-pair">
+                <a href="tel:047-498-8111">鎌ケ谷総合 047-498-8111</a>
+                <a href="tel:047-445-6411">東邦鎌谷 047-445-6411</a>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       <section className="status-bar">
-        <div className="stage-text">{stageText}</div>
+        <div className="status-main">
+          <span className="status-kicker">現在のステータス</span>
+          <div className="stage-text">{stageText}</div>
+        </div>
         <div className="kpis">
-          <span>
-            <b className={mustOpen ? 'red' : ''}>{mustOpen}</b> 件の「ぜったい」が日程未定
-          </span>
-          <span>
-            <b>{upcomingScheduled.length}</b> 件の予定
-          </span>
+          <div className="kpi-box">
+            <span className="kpi-label">必須・日程未定</span>
+            <strong className={mustOpen ? 'red' : ''}>{mustOpen}件</strong>
+          </div>
+          <div className="kpi-box">
+            <span className="kpi-label">今後の予定</span>
+            <strong>{upcomingScheduled.length}件</strong>
+          </div>
+          <div className="kpi-box">
+            <span className="kpi-label">完了済</span>
+            <strong>
+              {doneCount}/{views.length}
+            </strong>
+          </div>
         </div>
       </section>
 
-      <section style={{ margin: '0.5rem 0', padding: '0.8rem', background: '#ffebee', border: '1px solid #ef9a9a', borderRadius: '10px', fontSize: '0.9rem' }}>
-        <div style={{ fontWeight: 'bold', color: '#c62828', marginBottom: '0.4rem' }}>🚨 陣痛・緊急時の連絡先</div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-          <span>🏥 産院:</span>
-          <a href={`tel:${settings.emergencyContacts?.hospital || ''}`} style={{ fontWeight: 'bold', color: '#c62828', textDecoration: 'none' }}>
-            {settings.emergencyContacts?.hospital || '未登録'}
-          </a>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <span>🚕 陣痛タクシー:</span>
-          <a href={`tel:${settings.emergencyContacts?.taxi || ''}`} style={{ fontWeight: 'bold', color: '#c62828', textDecoration: 'none' }}>
-            {settings.emergencyContacts?.taxi || '未登録'}
-          </a>
-        </div>
-        {(!settings.emergencyContacts?.hospital || !settings.emergencyContacts?.taxi) && (
-          <button onClick={() => setShowSettings(true)} style={{ marginTop: '0.5rem', width: '100%', padding: '0.4rem', fontSize: '0.8rem', background: '#fff', border: '1px solid #c62828', color: '#c62828', borderRadius: '4px', cursor: 'pointer' }}>
-            設定する
-          </button>
-        )}
-      </section>
-
-      <nav className="tabs">
+      <nav className="tabs" aria-label="メインメニュー">
         {(
           [
             ['now', 'いまやること'],
-            ['timeline', 'ぜんぶ見る'],
-            ['scheduled', `予定（${upcomingScheduled.length}）`],
-            ['nursery', '保活・保育園'],
-            ['money', '💰 お金'],
+            ['timeline', '全期間一覧'],
+            ['scheduled', `予定表（${upcomingScheduled.length}）`],
+            ['nursery', '保活・園比較'],
+            ['money', 'お金・助成金'],
           ] as const
         ).map(([k, l]) => (
-          <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>
+          <button key={k} type="button" className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>
             {l}
           </button>
         ))}
       </nav>
 
-      {tab !== 'scheduled' && tab !== 'nursery' && tab !== 'money' && (
+      {(tab === 'now' || tab === 'timeline') && (
         <section className="filters">
-          <button
-            className={`papa-mode ${papaMode ? 'on' : ''}`}
-            onClick={() => setRoles(papaMode ? ['papa', 'together', 'mama'] : ['papa'])}
-          >
-            🧔 パパモード{papaMode ? ' ON' : ''}
-          </button>
+          <div className="toolbar-row">
+            <input
+              type="search"
+              className="task-search"
+              value={taskQuery}
+              onChange={(e) => setTaskQuery(e.target.value)}
+              placeholder="タスク名・窓口・持ち物で検索..."
+            />
+            <button
+              type="button"
+              className={`papa-mode ${papaMode ? 'on' : ''}`}
+              onClick={() => setRoles(papaMode ? ['papa', 'together', 'mama'] : ['papa'])}
+            >
+              パパ単独OKのみ{papaMode ? '（解除）' : ''}
+            </button>
+            <button type="button" onClick={() => setShowAddTask(!showAddTask)}>
+              {showAddTask ? '閉じる' : '+ タスクを追加'}
+            </button>
+          </div>
+
+          {showAddTask && (
+            <div className="panel-box">
+              <div className="subhead">夫婦のオリジナルタスク・通院予定を追加</div>
+              <div className="form-grid">
+                <label>
+                  タスク名（必須）
+                  <input
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    placeholder="例：両親学級の予約、戌の日のお参り、産院の4Dエコー"
+                  />
+                </label>
+                <label>
+                  時期区分
+                  <select value={newPhase} onChange={(e) => setNewPhase(e.target.value as Phase)}>
+                    {(Object.keys(PHASE) as Phase[]).map((p) => (
+                      <option key={p} value={p}>
+                        {PHASE[p].label}（{PHASE[p].sub}）
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  優先度
+                  <select value={newPriority} onChange={(e) => setNewPriority(e.target.value as Priority)}>
+                    {(Object.keys(PRIORITY) as Priority[]).map((p) => (
+                      <option key={p} value={p}>
+                        {PRIORITY[p].label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  担当の目安
+                  <select value={newRole} onChange={(e) => setNewRole(e.target.value as Role)}>
+                    {(Object.keys(ROLE) as Role[]).map((r) => (
+                      <option key={r} value={r}>
+                        {ROLE[r].label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  予定日（決まっている場合）
+                  <input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} />
+                </label>
+                <label>
+                  場所・窓口（任意）
+                  <input value={newPlace} onChange={(e) => setNewPlace(e.target.value)} placeholder="例：〇〇産婦人科" />
+                </label>
+              </div>
+              <label>
+                メモ・内容（任意）
+                <input
+                  value={newSummary}
+                  onChange={(e) => setNewSummary(e.target.value)}
+                  placeholder="例：持ち物や確認したいことを記入"
+                />
+              </label>
+              <div className="actions">
+                <button type="button" className="primary" onClick={addCustomTask} disabled={!newTitle.trim()}>
+                  リストに追加する
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="chips">
             {(Object.keys(PRIORITY) as Priority[]).map((p) => (
               <button
                 key={p}
+                type="button"
                 className={`chip pri-${p} ${priorities.includes(p) ? 'on' : ''}`}
                 onClick={() => toggle(priorities, p, setPriorities)}
               >
@@ -260,10 +459,11 @@ export default function App() {
             {(Object.keys(ROLE) as Role[]).map((r) => (
               <button
                 key={r}
+                type="button"
                 className={`chip role-${r} ${roles.includes(r) ? 'on' : ''}`}
                 onClick={() => toggle(roles, r, setRoles)}
               >
-                {ROLE[r].icon} {ROLE[r].label}
+                {ROLE[r].label}
               </button>
             ))}
             <label className="check small">
@@ -280,37 +480,59 @@ export default function App() {
             views={filtered}
             settings={settings}
             onChange={updateTask}
+            onDeleteCustom={deleteCustomTask}
             prep={!due && !birth}
             focusId={focusId}
             onBulkDone={bulkDone}
           />
         )}
-        {tab === 'timeline' && <Timeline views={filtered} settings={settings} onChange={updateTask} focusId={focusId} />}
+        {tab === 'timeline' && (
+          <Timeline
+            views={filtered}
+            settings={settings}
+            onChange={updateTask}
+            onDeleteCustom={deleteCustomTask}
+            focusId={focusId}
+          />
+        )}
         {tab === 'scheduled' && (
-          <section>
-            <div className="bulk">
+          <section className="section-block">
+            <div className="section-header-row">
+              <div>
+                <h2>予定日が決まったタスク一覧</h2>
+                <p className="section-desc">夫婦で決めた実施日順に並んでいます。</p>
+              </div>
               <button
+                type="button"
                 disabled={!upcomingScheduled.length}
                 onClick={() => downloadIcs('kamagaya-family.ics', buildIcs(upcomingScheduled))}
               >
-                今後の予定をまとめて .ics で書き出す
+                今後の予定を一括で .ics 出力
               </button>
             </div>
-            {scheduled.length === 0 && <p className="empty">まだ日程が決まったタスクはありません。</p>}
+            {scheduled.length === 0 && (
+              <p className="empty">まだ日程が決まったタスクはありません。各タスクの「詳細」から実施日を登録できます。</p>
+            )}
             {Array.from(new Set(scheduled.map((v) => v.state.date!))).map((d) => {
               const day = parseDate(d)!
               const isToday = day.getTime() === today().getTime()
               const isPast = day < today()
               return (
-                <div key={d}>
-                  <h2 className={`day-head ${isToday ? 'today' : ''} ${isPast ? 'past' : ''}`}>
-                    📅 {jp(day, true)}
-                    {isToday && ' ・今日'}
-                  </h2>
+                <div key={d} className="schedule-day-group">
+                  <h3 className={`day-head ${isToday ? 'today' : ''} ${isPast ? 'past' : ''}`}>
+                    <span>{jp(day, true)}</span>
+                    {isToday && <span className="today-pill">今日</span>}
+                  </h3>
                   {scheduled
                     .filter((v) => v.state.date === d)
                     .map((v) => (
-                      <TaskCard key={v.task.id} view={v} settings={settings} onChange={updateTask} />
+                      <TaskCard
+                        key={v.task.id}
+                        view={v}
+                        settings={settings}
+                        onChange={updateTask}
+                        onDeleteCustom={deleteCustomTask}
+                      />
                     ))}
                 </div>
               )
@@ -318,15 +540,17 @@ export default function App() {
           </section>
         )}
         {tab === 'nursery' && <NurseryList settings={settings} onUpdateSettings={saveSettings} />}
-        {tab === 'money' && <MoneySimulation settings={settings} onUpdateSettings={saveSettings} views={views} onJump={jumpToTask} />}
+        {tab === 'money' && (
+          <MoneySimulation settings={settings} onUpdateSettings={saveSettings} views={views} onJump={jumpToTask} />
+        )}
       </main>
 
       <footer>
         <p>
-          掲載情報は鎌ケ谷市子育て応援サイト「かまっこ応援団」等をもとに2026年10月時点で作成しています。手続きの詳細は各タスクの公式情報リンクからご確認ください。
+          掲載情報は鎌ケ谷市公式ホームページおよび鎌ケ谷市子育て応援サイト「かまっこ応援団」の公開情報をもとに構成しています。制度の最新要件は各タスクの参照元リンクからご確認ください。
         </p>
         <p>
-          Amazonのアソシエイトとして、かまがや親子カレンダーは適格販売により収入を得ています。「🛒 おすすめ・準備リスト」のリンクは広告（アフィリエイトリンク）です。
+          Amazonのアソシエイトとして、かまがや親子カレンダーは適格販売により収入を得ています。タスク詳細内の「関連アイテム」はアフィリエイト広告を含みます。
         </p>
       </footer>
       {toast && <div className="toast">{toast}</div>}
@@ -337,11 +561,14 @@ export default function App() {
 function Header({ children }: { children?: React.ReactNode }) {
   return (
     <header className="header">
-      <div>
-        <h1>かまがや親子カレンダー</h1>
-        <p className="tagline">何を・いつまでに・誰がやるか</p>
+      <div className="brand">
+        <div className="brand-row">
+          <span className="city-tag">千葉県鎌ケ谷市</span>
+          <h1>かまがや親子カレンダー</h1>
+        </div>
+        <p className="tagline">妊娠・出産・保活・予防接種の夫婦分担スケジュール帳</p>
       </div>
-      <div className="header-actions">{children}</div>
+      {children && <div className="header-actions">{children}</div>}
     </header>
   )
 }
@@ -350,6 +577,7 @@ interface ListProps {
   views: TaskView[]
   settings: Settings
   onChange: (id: string, patch: Partial<TaskState>) => void
+  onDeleteCustom: (id: string) => void
   focusId?: string
 }
 
@@ -357,38 +585,59 @@ function NowList({
   views,
   settings,
   onChange,
+  onDeleteCustom,
   prep,
   focusId,
   onBulkDone,
 }: ListProps & { prep: boolean; onBulkDone: (ids: string[]) => void }) {
   const groups: Timing[] = prep ? ['anytime'] : ['overdue', 'now', 'soon']
   const list = views.filter((v) => (prep ? v.task.phase === 'prep' : groups.includes(v.timing)))
-  if (!list.length) return <p className="empty">いま対応が必要なタスクはありません 🎉 「ぜんぶ見る」で先の予定も確認できます。</p>
+  if (!list.length) {
+    return (
+      <p className="empty">
+        直近で対応が必要なタスクはありません。「全期間一覧」タブから先のスケジュールを確認できます。
+      </p>
+    )
+  }
   return (
     <>
-      {prep && <p className="hint block">妊娠がわかったら ⚙️ 設定から出産予定日を入力すると、妊娠期以降のタスクが表示されます。</p>}
+      {prep && (
+        <p className="hint block">
+          妊娠がわかったら上部「設定」から出産予定日を登録すると、妊娠週数に応じた手続きスケジュールが自動計算されます。
+        </p>
+      )}
       {groups.map((g) => {
         const items = list.filter((v) => v.timing === g).sort(sortViews)
         if (!items.length) return null
         return (
           <section key={g} className={`group g-${g}`}>
-            <h2>
-              {TIMING_LABEL[g]} <span className="count">{items.length}</span>
+            <div className="group-head">
+              <h2>
+                {TIMING_LABEL[g]} <span className="count">{items.length}</span>
+              </h2>
               {g === 'overdue' && (
                 <button
+                  type="button"
                   className="bulk-done"
                   onClick={() => {
-                    if (confirm(`期限切れ・要確認の ${items.length} 件をすべて「完了」にします。よろしいですか？`)) {
+                    if (confirm(`推奨期間を過ぎている ${items.length} 件のタスクをすべて「完了」にしますか？`)) {
                       onBulkDone(items.map((v) => v.task.id))
                     }
                   }}
                 >
-                  ✅ 過去のタスクを一括完了
+                  過去のタスクを一括完了にする
                 </button>
               )}
-            </h2>
+            </div>
             {items.map((v) => (
-              <TaskCard key={v.task.id} view={v} settings={settings} onChange={onChange} focused={focusId === v.task.id} />
+              <TaskCard
+                key={v.task.id}
+                view={v}
+                settings={settings}
+                onChange={onChange}
+                onDeleteCustom={onDeleteCustom}
+                focused={focusId === v.task.id}
+              />
             ))}
           </section>
         )
@@ -397,7 +646,7 @@ function NowList({
   )
 }
 
-function Timeline({ views, settings, onChange, focusId }: ListProps) {
+function Timeline({ views, settings, onChange, onDeleteCustom, focusId }: ListProps) {
   return (
     <>
       {(Object.keys(PHASE) as Phase[]).map((p) => {
@@ -405,11 +654,22 @@ function Timeline({ views, settings, onChange, focusId }: ListProps) {
         if (!items.length) return null
         return (
           <section key={p} className="group">
-            <h2>
-              {PHASE[p].icon} {PHASE[p].label} <span className="count">{items.length}</span>
-            </h2>
+            <div className="group-head">
+              <h2>
+                {PHASE[p].label}
+                <span className="phase-sub">{PHASE[p].sub}</span>
+                <span className="count">{items.length}</span>
+              </h2>
+            </div>
             {items.map((v) => (
-              <TaskCard key={v.task.id} view={v} settings={settings} onChange={onChange} focused={focusId === v.task.id} />
+              <TaskCard
+                key={v.task.id}
+                view={v}
+                settings={settings}
+                onChange={onChange}
+                onDeleteCustom={onDeleteCustom}
+                focused={focusId === v.task.id}
+              />
             ))}
           </section>
         )

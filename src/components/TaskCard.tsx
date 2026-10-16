@@ -8,13 +8,13 @@ interface Props {
   view: TaskView
   settings: Settings
   onChange: (id: string, patch: Partial<TaskState>) => void
-  /** お金タブなどからジャンプしてきたとき、開いてスクロールする */
+  onDeleteCustom?: (id: string) => void
   focused?: boolean
 }
 
 const ASSIGNEE_LABEL: Record<string, string> = { papa: 'パパ', mama: 'ママ', both: '夫婦' }
 
-export function TaskCard({ view, settings, onChange, focused }: Props) {
+export function TaskCard({ view, settings, onChange, onDeleteCustom, focused }: Props) {
   const { task, state, window: w, timing, daysLeft } = view
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLElement>(null)
@@ -64,89 +64,105 @@ export function TaskCard({ view, settings, onChange, focused }: Props) {
   return (
     <article ref={ref} className={`card p-${task.priority} t-${timing} ${closed ? 'closed' : ''}`}>
       <div className="card-top">
-      <button
-        className={`quick-done ${state.status === 'done' ? 'on' : ''}`}
-        onClick={toggleQuickDone}
-        aria-label={state.status === 'done' ? '完了を取り消す' : '完了にする'}
-        title={state.status === 'done' ? '完了を取り消す' : 'ワンタップで完了'}
-      >
-        {state.status === 'done' ? '✓' : ''}
-      </button>
-      <button className="card-head" onClick={() => setOpen(!open)} aria-expanded={open}>
-        <div className="badges">
-          <span className={`badge pri-${task.priority}`}>{PRIORITY[task.priority].short}</span>
-          <span className={`badge role-${task.role}`}>
-            {ROLE[task.role].icon} {ROLE[task.role].label}
-          </span>
-          {task.money && <span className="badge money">💰 お金</span>}
-          {state.status !== 'todo' && <span className={`badge st-${state.status}`}>{STATUS[state.status]}</span>}
-        </div>
-        <h3>{task.title}</h3>
-        <div className="meta">
-          {w.start && w.end ? (
-            <span>
-              推奨 {jp(w.start)}〜{jp(w.end, w.end.getFullYear() !== new Date().getFullYear())}
-            </span>
-          ) : (
-            <span>いつでも</span>
-          )}
-          {timing === 'now' && daysLeft !== undefined && !closed && (
-            <span className={`left ${daysLeft <= 7 ? 'urgent' : ''}`}>
-              {task.hardDeadline ? '期限' : '推奨期間終了'}まであと{daysLeft}日
-            </span>
-          )}
-          {timing === 'overdue' && <span className="left urgent">推奨期間を過ぎています</span>}
-          {state.date && (
-            <span className="planned">
-              📅 {jp(parseDate(state.date)!)}
-              {state.time && ` ${state.time}`}
-              {state.calendarAdded && ' ✓カレンダー登録済'}
-            </span>
-          )}
-          {state.date && (
-            <span className="who">👤 {ASSIGNEE_LABEL[state.assignee ?? ''] ?? '担当未定'}</span>
-          )}
-          {state.date && task.place && <span className="where">📍 {task.place}</span>}
-        </div>
-        <span className="chev">{open ? '▲' : '▼'}</span>
-      </button>
+        <button
+          className={`quick-done ${state.status === 'done' ? 'on' : ''}`}
+          onClick={toggleQuickDone}
+          aria-label={state.status === 'done' ? '完了を取り消す' : '完了にする'}
+          title={state.status === 'done' ? '完了を取り消す' : '完了にする'}
+        >
+          {state.status === 'done' ? '✓' : ''}
+        </button>
+        <button className="card-head" onClick={() => setOpen(!open)} aria-expanded={open}>
+          <div className="badges">
+            <span className={`badge pri-${task.priority}`}>{PRIORITY[task.priority].short}</span>
+            <span className={`badge role-${task.role}`}>{ROLE[task.role].short}</span>
+            {task.money && <span className="badge money">給付・助成</span>}
+            {task.custom && <span className="badge custom">追加タスク</span>}
+            {state.status !== 'todo' && <span className={`badge st-${state.status}`}>{STATUS[state.status]}</span>}
+          </div>
+          <h3>{task.title}</h3>
+          <div className="meta">
+            {w.start && w.end ? (
+              <span>
+                推奨：{jp(w.start)}〜{jp(w.end, w.end.getFullYear() !== new Date().getFullYear())}
+              </span>
+            ) : (
+              <span>期間指定なし</span>
+            )}
+            {timing === 'now' && daysLeft !== undefined && !closed && (
+              <span className={`left ${daysLeft <= 7 ? 'urgent' : ''}`}>
+                {task.hardDeadline ? '提出期限' : '推奨期間'}まであと{daysLeft}日
+              </span>
+            )}
+            {timing === 'overdue' && <span className="left urgent">推奨期間超過</span>}
+            {state.date && (
+              <span className="planned">
+                予定：{jp(parseDate(state.date)!)}
+                {state.time && ` ${state.time}`}
+                {state.calendarAdded && '（カレンダー登録済）'}
+              </span>
+            )}
+            {state.date && (
+              <span className="who">担当：{ASSIGNEE_LABEL[state.assignee ?? ''] ?? '未定'}</span>
+            )}
+            {state.date && task.place && <span className="where">場所：{task.place}</span>}
+          </div>
+          <span className="chev" aria-hidden="true">{open ? '閉じる' : '詳細'}</span>
+        </button>
       </div>
 
       {open && (
         <div className="card-body">
           <p className="summary">{task.summary}</p>
-          {task.deadlineLabel && (
-            <p className={`deadline ${task.hardDeadline ? 'hard' : ''}`}>⏰ {task.deadlineLabel}</p>
-          )}
-          {task.money && <p className="money-line">💰 {task.money}</p>}
-          {task.place && (
-            <p>
-              <strong>📍 窓口：</strong>
-              {task.place}
-            </p>
-          )}
-          {task.bring && (
-            <div>
-              <strong>🎒 持ち物</strong>
-              <ul>
-                {task.bring.map((b) => (
-                  <li key={b}>{b}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {task.papaNote && <p className="papa-note">🧔 {task.papaNote}</p>}
+
+          <div className="info-grid">
+            {task.deadlineLabel && (
+              <div className={`info-item ${task.hardDeadline ? 'hard' : ''}`}>
+                <span className="info-label">期限</span>
+                <span className="info-val">{task.deadlineLabel}</span>
+              </div>
+            )}
+            {task.money && (
+              <div className="info-item money-line">
+                <span className="info-label">金額・助成</span>
+                <span className="info-val">{task.money}</span>
+              </div>
+            )}
+            {task.place && (
+              <div className="info-item">
+                <span className="info-label">窓口・場所</span>
+                <span className="info-val">{task.place}</span>
+              </div>
+            )}
+            {task.bring && task.bring.length > 0 && (
+              <div className="info-item">
+                <span className="info-label">必要なもの</span>
+                <ul className="bring-list">
+                  {task.bring.map((b) => (
+                    <li key={b}>{b}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {task.papaNote && (
+              <div className="info-item papa-note">
+                <span className="info-label">分担メモ</span>
+                <span className="info-val">{task.papaNote}</span>
+              </div>
+            )}
+          </div>
+
           {task.sourceUrl && (
             <p className="source">
               <a href={task.sourceUrl} target="_blank" rel="noopener noreferrer">
-                🔗 {task.sourceLabel ?? '公式情報'}
+                参照元：{task.sourceLabel ?? '公式情報'} ↗
               </a>
             </p>
           )}
 
           {task.checklist && task.checklist.length > 0 && (
             <div className="checklist-container">
-              <strong>✅ 詳細チェックリスト</strong>
+              <div className="subhead">準備・確認リスト</div>
               <div className="checklist">
                 {task.checklist.map((item) => {
                   const checked = state.checklistState?.[item] ?? false
@@ -167,12 +183,14 @@ export function TaskCard({ view, settings, onChange, focused }: Props) {
 
           {task.affiliate && task.affiliate.length > 0 && (
             <div className="recommendations">
-              <strong>🛒 おすすめ・準備リスト <small style={{ fontWeight: 400, color: '#888' }}>PR</small></strong>
+              <div className="subhead">
+                関連アイテム <span className="ad-badge">広告</span>
+              </div>
               <ul>
                 {task.affiliate.map((a, i) => (
                   <li key={i}>
                     <a href={a.url} target="_blank" rel="noopener noreferrer" className="ext-link">
-                      {a.icon} {a.label}
+                      {a.label} ↗
                     </a>
                   </li>
                 ))}
@@ -181,13 +199,14 @@ export function TaskCard({ view, settings, onChange, focused }: Props) {
           )}
 
           <div className="scheduler">
+            <div className="subhead">日程と担当を決める</div>
             <div className="row">
               <label>
-                行く日・やる日
+                実施日
                 <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
               </label>
               <label>
-                時刻（空欄で終日）
+                時刻（任意）
                 <input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
               </label>
               <label>
@@ -205,15 +224,15 @@ export function TaskCard({ view, settings, onChange, focused }: Props) {
             </div>
             {suggested && (
               <p className="hint">
-                おすすめ日：{jp(suggested)}
+                目安日：{jp(suggested)}
                 {date !== fmt(suggested) && (
                   <button className="link" onClick={() => setDate(fmt(suggested))}>
-                    この日にする
+                    この日をセット
                   </button>
                 )}
               </p>
             )}
-            {outOfWindow && <p className="hint warn">推奨期間の外の日付です</p>}
+            {outOfWindow && <p className="hint warn">推奨期間外の日付が選択されています</p>}
             <div className="quick-dates">
               {quickDates().map((q) => (
                 <button
@@ -228,43 +247,63 @@ export function TaskCard({ view, settings, onChange, focused }: Props) {
               ))}
             </div>
             {task.place && date && isWeekend(parseDate(date)!) && (
-              <p className="hint warn">※窓口は平日の開庁時間のみの場合があります。事前に公式情報をご確認ください</p>
+              <p className="hint warn">市役所・保健センター窓口の手続きは原則平日開庁時間のみとなります。</p>
             )}
             <label className="memo">
-              メモ（夫婦間の申し送りなど）
+              夫婦間メモ・引き継ぎ事項
               <textarea
                 rows={2}
                 value={state.memo ?? ''}
                 onChange={(e) => update({ memo: e.target.value })}
-                placeholder="例：委任状はママが記入済み。机の上のクリアファイルに入れてあります"
+                placeholder="例：委任状は記入済み。母子手帳ケースに同封しています"
               />
             </label>
             <div className="actions">
-              <button className="primary" disabled={!date} onClick={addGoogle}>
-                Googleカレンダーに追加
+              <button className="primary" disabled={!date} onClick={schemaScheduleButton(schedule, date, state.date)}>
+                予定として保存
+              </button>
+              <button disabled={!date} onClick={addGoogle}>
+                Googleカレンダー登録
               </button>
               <button disabled={!date} onClick={addIcs}>
-                .ics（iPhone等）
+                iPhoneカレンダー(.ics)
               </button>
               {state.status !== 'done' ? (
                 <button className="done" onClick={() => update({ status: 'done' })}>
-                  ✓ 完了
+                  完了にする
                 </button>
               ) : (
-                <button onClick={() => update({ status: state.date ? 'scheduled' : 'todo' })}>完了を取り消す</button>
+                <button onClick={() => update({ status: state.date ? 'scheduled' : 'todo' })}>未完了に戻す</button>
               )}
-              {state.status !== 'skip' && (
+              {state.status !== 'skip' ? (
                 <button className="ghost" onClick={() => update({ status: 'skip' })}>
-                  対象外
+                  対象外にする
+                </button>
+              ) : (
+                <button className="ghost" onClick={() => update({ status: 'todo' })}>
+                  対象外を解除
+                </button>
+              )}
+              {task.custom && onDeleteCustom && (
+                <button className="ghost danger" onClick={() => onDeleteCustom(task.id)}>
+                  削除
                 </button>
               )}
             </div>
             {(settings.papaEmail || settings.mamaEmail) && (
-              <p className="hint">設定したメールアドレスをゲストとして招待した状態で予定作成画面が開きます。</p>
+              <p className="hint">Googleカレンダー登録時は、設定済みのメールアドレスをゲストに含めて作成画面を開きます。</p>
             )}
           </div>
         </div>
       )}
     </article>
   )
+}
+
+function schemaScheduleButton(schedule: () => void, date: string, savedDate?: string) {
+  return () => {
+    if (!date) return
+    schedule()
+    void savedDate
+  }
 }

@@ -1,91 +1,56 @@
-import { useState } from 'react';
-
 interface Props {
-  onComplete: () => void;
+  onComplete: () => void
 }
 
 export function Onboarding({ onComplete }: Props) {
-  const [step, setStep] = useState(0);
-
-  const steps = [
+  const features = [
     {
-      title: '鎌ケ谷市での子育てをスムーズに',
-      desc: '妊娠から小学校入学前までの、鎌ケ谷市の制度や手続き、健診などのタスクを自動でリストアップします。',
-      icon: '👶'
+      num: '01',
+      title: '鎌ケ谷市の制度・手続きを時期別に自動整理',
+      desc: '出産予定日または生年月日を入力するだけで、母子手帳交付・妊婦健診・給付金・予防接種・保活まで、その時期に必要な手続きを推奨期間つきで一覧化します。',
     },
     {
-      title: '勝手にカレンダーを汚さない',
-      desc: '自動ですべての予定をカレンダーに入れるのではなく、夫婦で「行く日」を決めたタスクだけを、ワンクリックでGoogleカレンダーに追加できます。',
-      icon: '🗓️'
+      num: '02',
+      title: '夫婦で決めた予定だけをカレンダーへ登録',
+      desc: '勝手に大量の予定を書き込むのではなく、週末の夫婦会議で「いつ・誰が行くか」を決めたタスクだけをGoogleカレンダーやiPhoneカレンダーへ追加できます。',
     },
     {
-      title: 'パパの活躍を全力サポート',
-      desc: '「パパ単独OK」のタスクが一目でわかります。ママが動けない時期のタスク分担を直感的にサポートします。',
-      icon: '🧔'
+      num: '03',
+      title: 'パパ単独で動ける手続き・保活・助成金を一元管理',
+      desc: '窓口の委任状条件や同時手続きのコツ、市内28園のエリア別比較、もらい損ね防止トラッカー（医療費控除試算つき）をひとつの画面で確認できます。',
     },
     {
-      title: '個人情報も安心',
-      desc: '会員登録やログインは一切不要。データはすべてあなた自身の端末に保存されるので、プライバシーも守られます。',
-      icon: '🔒'
-    }
-  ];
+      num: '04',
+      title: 'ログイン不要・端末内保存でプライバシーを保護',
+      desc: 'アカウント登録は不要です。入力した予定やメモはご自身のブラウザ内にのみ保存され、共有リンクを発行したときだけパートナーの端末へ引き継げます。',
+    },
+  ]
 
   return (
-    <div style={{
-      background: '#fff',
-      border: '1px solid #e1e8e5',
-      borderRadius: '18px',
-      padding: '2rem 1.5rem',
-      textAlign: 'center',
-      marginBottom: '1rem',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
-    }}>
-      <h2 style={{ fontSize: '1.4rem', color: '#1a3328', marginBottom: '1.5rem' }}>かまがや親子カレンダーへようこそ！</h2>
-      
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', marginBottom: '2rem' }}>
-        {steps.map((s, i) => (
-          <div key={i} style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '1rem', 
-            textAlign: 'left',
-            opacity: step >= i ? 1 : 0.3,
-            transition: 'opacity 0.3s ease'
-          }}>
-            <div style={{ fontSize: '2.5rem' }}>{s.icon}</div>
+    <section className="onboarding-card">
+      <div className="onboarding-head">
+        <span className="kicker">KAMAGAYA PARENTING SCHEDULE</span>
+        <h2>かまがや親子カレンダー</h2>
+        <p>妊娠期から小学校入学前までの手続き・健診・保活・お金を夫婦で分担するための進行管理ノートです。</p>
+      </div>
+
+      <div className="onboarding-grid">
+        {features.map((f) => (
+          <div key={f.num} className="onboarding-item">
+            <span className="onboarding-num">{f.num}</span>
             <div>
-              <h3 style={{ fontSize: '1.05rem', margin: '0 0 0.3rem 0', color: '#2b7055' }}>{s.title}</h3>
-              <p style={{ fontSize: '0.85rem', margin: 0, color: '#555', lineHeight: '1.4' }}>{s.desc}</p>
+              <h3>{f.title}</h3>
+              <p>{f.desc}</p>
             </div>
           </div>
         ))}
       </div>
 
-      {step < steps.length - 1 ? (
-        <button 
-          onClick={() => setStep(step + 1)}
-          style={{
-            background: '#2b7055', color: '#fff', border: 'none', 
-            padding: '1rem 2rem', borderRadius: '30px', fontSize: '1rem', 
-            fontWeight: 'bold', width: '100%', cursor: 'pointer',
-            boxShadow: '0 4px 6px rgba(43, 112, 85, 0.2)'
-          }}
-        >
-          次へ
+      <div className="onboarding-foot">
+        <button type="button" className="primary large-btn" onClick={onComplete}>
+          時期・予定日の設定へ進む
         </button>
-      ) : (
-        <button 
-          onClick={onComplete}
-          style={{
-            background: '#e86a42', color: '#fff', border: 'none', 
-            padding: '1rem 2rem', borderRadius: '30px', fontSize: '1rem', 
-            fontWeight: 'bold', width: '100%', cursor: 'pointer',
-            boxShadow: '0 4px 6px rgba(232, 106, 66, 0.2)'
-          }}
-        >
-          設定をはじめる
-        </button>
-      )}
-    </div>
-  );
+      </div>
+    </section>
+  )
 }

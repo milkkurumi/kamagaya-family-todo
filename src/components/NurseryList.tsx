@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { NURSERIES, mapUrl, searchUrl } from '../data/nurseries'
-import type { NurseryType } from '../data/nurseries'
-import type { Settings } from '../types'
+import type { Nursery, NurseryArea, NurseryType } from '../data/nurseries'
+import type { CustomNurseryItem, Settings } from '../types'
 
 interface NurseryListProps {
   settings: Settings
@@ -9,12 +9,51 @@ interface NurseryListProps {
 }
 
 const TYPES: (NurseryType | 'fav' | 'all')[] = ['all', 'fav', '市立保育園', '私立保育園', '幼稚園', '認定こども園', '小規模保育']
-const LABEL: Record<string, string> = { all: 'すべて', fav: '★ お気に入り' }
+const TYPE_LABEL: Record<string, string> = { all: 'すべての種別', fav: '候補のみ' }
+
+const AREAS: (NurseryArea | 'all')[] = ['all', '新鎌ケ谷', '鎌ケ谷', '初富・北初富', '鎌ケ谷大仏', '馬込沢・六実・粟野']
+const AREA_LABEL: Record<string, string> = { all: '全エリア' }
+
+const QUICK_TAGS = [
+  '第一候補',
+  '併願候補',
+  '見学済',
+  '駅チカ',
+  '園庭あり',
+  'おむつサブスク',
+  'ベビーカー置場○',
+  '延長保育○',
+  '駐車場あり',
+]
 
 export function NurseryList({ settings, onUpdateSettings }: NurseryListProps) {
-  const [filter, setFilter] = useState<(typeof TYPES)[number]>('all')
+  const [typeFilter, setTypeFilter] = useState<(typeof TYPES)[number]>('all')
+  const [areaFilter, setAreaFilter] = useState<(typeof AREAS)[number]>('all')
+  const [query, setQuery] = useState('')
+  const [showAdd, setShowAdd] = useState(false)
+  const [newName, setNewName] = useState('')
+  const [newType, setNewType] = useState('認可外・その他')
+  const [newStation, setNewStation] = useState('')
+  const [newNote, setNewNote] = useState('')
+
   const favorites = settings.nurseryFavorites || []
   const memos = settings.nurseryMemos || {}
+  const tagsMap = settings.nurseryTags || {}
+  const customNurseries = settings.customNurseries || []
+
+  const allNurseries: (Nursery & { custom?: boolean })[] = [
+    ...customNurseries.map((c) => ({
+      id: c.id,
+      name: c.name,
+      type: (c.type as NurseryType) || '私立保育園',
+      area: '新鎌ケ谷' as NurseryArea,
+      station: c.station,
+      note: c.note,
+      url: c.url,
+      custom: true,
+    })),
+    ...NURSERIES,
+  ]
 
   const toggleFavorite = (id: string) => {
     const next = favorites.includes(id) ? favorites.filter((f) => f !== id) : [...favorites, id]
@@ -25,142 +64,269 @@ export function NurseryList({ settings, onUpdateSettings }: NurseryListProps) {
     onUpdateSettings({ ...settings, nurseryMemos: { ...memos, [id]: text } })
   }
 
+  const toggleTag = (id: string, tag: string) => {
+    const cur = tagsMap[id] || []
+    const next = cur.includes(tag) ? cur.filter((t) => t !== tag) : [...cur, tag]
+    const nextFavorites = !favorites.includes(id) && next.length > 0 ? [...favorites, id] : favorites
+    onUpdateSettings({
+      ...settings,
+      nurseryFavorites: nextFavorites,
+      nurseryTags: { ...tagsMap, [id]: next },
+    })
+  }
+
+  const addCustomNursery = () => {
+    if (!newName.trim()) return
+    const item: CustomNurseryItem = {
+      id: `custom-nursery-${Date.now()}`,
+      name: newName.trim(),
+      type: newType,
+      station: newStation.trim() || undefined,
+      note: newNote.trim() || undefined,
+    }
+    onUpdateSettings({
+      ...settings,
+      customNurseries: [item, ...customNurseries],
+      nurseryFavorites: [item.id, ...favorites],
+    })
+    setNewName('')
+    setNewStation('')
+    setNewNote('')
+    setShowAdd(false)
+  }
+
+  const deleteCustomNursery = (id: string) => {
+    onUpdateSettings({
+      ...settings,
+      customNurseries: customNurseries.filter((c) => c.id !== id),
+      nurseryFavorites: favorites.filter((f) => f !== id),
+    })
+  }
+
   const shareLine = () => {
-    let text = '【保活・候補の保育園リスト】\n'
+    let text = '【鎌ケ谷市 保活・候補の園リスト】\n'
     favorites.forEach((id) => {
-      const n = NURSERIES.find((x) => x.id === id)
-      if (n) text += `\n■ ${n.name}\n` + (memos[id] ? `メモ: ${memos[id]}\n` : '')
+      const n = allNurseries.find((x) => x.id === id)
+      if (n) {
+        const t = tagsMap[id]?.length ? ` [${tagsMap[id].join(' / ')}]` : ''
+        text += `\n■ ${n.name}（${n.type}${n.station ? `・${n.station}` : ''}）${t}\n`
+        if (memos[id]) text += `${memos[id]}\n`
+      }
     })
     window.open(`https://line.me/R/msg/text/?${encodeURIComponent(text)}`, '_blank')
   }
 
   const insertChecklist = (id: string) => {
     const current = memos[id] || ''
-    const checklist = `${current ? '\n' : ''}【見学チェックリスト】\n□ おむつのサブスク・持ち帰り\n□ 連絡帳はアプリか\n□ 午睡センサー等安全面\n□ ベビーカー置き場\n□ 延長保育の条件\n`
+    const checklist = `${current ? '\n' : ''}[見学確認項目]\n・おむつサブスク／持ち帰り有無：\n・連絡帳（アプリ／紙）：\n・布団の持ち帰り頻度：\n・ベビーカー置場・車送迎の可否：\n・延長保育の条件・捕食の有無：\n・園庭・外遊びの頻度：`
     updateMemo(id, current + checklist)
   }
 
-  const list = NURSERIES.filter((n) =>
-    filter === 'all' ? true : filter === 'fav' ? favorites.includes(n.id) : n.type === filter,
-  )
-
-  const chip = (on: boolean) => ({
-    padding: '0.4rem 0.8rem',
-    borderRadius: '20px',
-    border: '1px solid #ccc',
-    background: on ? '#2b7055' : '#fff',
-    color: on ? '#fff' : '#333',
-    whiteSpace: 'nowrap' as const,
+  const list = allNurseries.filter((n) => {
+    if (typeFilter === 'fav' && !favorites.includes(n.id)) return false
+    if (typeFilter !== 'all' && typeFilter !== 'fav' && n.type !== typeFilter) return false
+    if (areaFilter !== 'all' && !n.custom && n.area !== areaFilter) return false
+    if (query.trim()) {
+      const q = query.trim().toLowerCase()
+      const hay = `${n.name} ${n.type} ${n.station || ''} ${n.address || ''} ${n.note || ''} ${(tagsMap[n.id] || []).join(' ')} ${memos[n.id] || ''}`.toLowerCase()
+      if (!hay.includes(q)) return false
+    }
+    return true
   })
 
   return (
-    <div style={{ paddingBottom: '80px' }}>
-      <h2>鎌ケ谷市の保育施設</h2>
-      <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
-        気になる園に「★」をつけると、共有リンクで夫婦の画面にも反映されます。
-        定員・開園時間・空き状況は
-        <a href="https://www.city.kamagaya.chiba.jp/" target="_blank" rel="noreferrer" style={{ color: '#2b7055' }}>
-          鎌ケ谷市公式ホームページ
-        </a>
-        で確認できます。
-      </p>
-
-      <div style={{ marginBottom: '1rem' }}>
-        <a 
-          href="https://www.google.com/maps/search/鎌ケ谷市+保育園+OR+幼稚園" 
-          target="_blank" 
-          rel="noreferrer"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: '#f0f5f3', color: '#2b7055', padding: '0.6rem 1rem', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.9rem' }}
-        >
-          📍 Googleマップで鎌ケ谷市周辺の保育園・幼稚園をまとめて見る
-        </a>
+    <section className="section-block">
+      <div className="section-header-row">
+        <div>
+          <h2>鎌ケ谷市の保育施設・幼稚園（全{allNurseries.length}園）</h2>
+          <p className="section-desc">
+            駅エリアや施設種別で絞り込み、見学メモや比較タグを夫婦で共有できます。最新の空き状況や入所選考基準は
+            <a href="https://www.city.kamagaya.chiba.jp/smph/kosodate/hoikuen/index.html" target="_blank" rel="noreferrer">
+              鎌ケ谷市公式ホームページ
+            </a>
+            をご確認ください。
+          </p>
+        </div>
+        <div className="section-actions">
+          <button type="button" onClick={() => setShowAdd(!showAdd)}>
+            {showAdd ? '閉じる' : '+ 園を追加'}
+          </button>
+          <a
+            href="https://www.google.com/maps/search/鎌ケ谷市+保育園+OR+幼稚園"
+            target="_blank"
+            rel="noreferrer"
+            className="btn-link-outline"
+          >
+            Googleマップで周辺検索 ↗
+          </a>
+        </div>
       </div>
 
-      <div style={{ marginBottom: '1rem', display: 'flex', gap: '0.5rem', overflowX: 'auto' }}>
-        {TYPES.map((t) => (
-          <button key={t} onClick={() => setFilter(t)} style={chip(filter === t)}>
-            {LABEL[t] ?? t}
-            {t === 'fav' && favorites.length ? `（${favorites.length}）` : ''}
-          </button>
-        ))}
-      </div>
-
-      {favorites.length > 0 && filter === 'fav' && (
-        <div style={{ marginBottom: '1rem', textAlign: 'right' }}>
-          <button onClick={shareLine} style={{ background: '#06c755', color: '#fff', border: 'none', padding: '0.6rem 1rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
-            💬 LINEで候補とメモを共有
-          </button>
+      {showAdd && (
+        <div className="panel-box">
+          <div className="subhead">候補の園・施設を追加（認可外・企業主導型・近隣市の園など）</div>
+          <div className="form-grid">
+            <label>
+              施設名（必須）
+              <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="例：〇〇保育園" />
+            </label>
+            <label>
+              種別
+              <input value={newType} onChange={(e) => setNewType(e.target.value)} placeholder="例：認可外・企業主導型" />
+            </label>
+            <label>
+              最寄り駅・徒歩分数
+              <input value={newStation} onChange={(e) => setNewStation(e.target.value)} placeholder="例：新鎌ケ谷駅 徒歩5分" />
+            </label>
+            <label>
+              補足メモ
+              <input value={newNote} onChange={(e) => setNewNote(e.target.value)} placeholder="例：7:00〜20:00 開園" />
+            </label>
+          </div>
+          <div className="actions">
+            <button type="button" className="primary" onClick={addCustomNursery} disabled={!newName.trim()}>
+              追加して候補に入れる
+            </button>
+          </div>
         </div>
       )}
 
-      {list.length === 0 && <p className="empty">まだお気に入りはありません。</p>}
+      <div className="filter-stack">
+        <div className="search-row">
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="園名・駅名・住所・特徴（一時預かり、病児保育など）で検索"
+          />
+          {favorites.length > 0 && (
+            <button type="button" className="btn-line" onClick={shareLine}>
+              候補リスト（{favorites.length}園）をLINEで送る
+            </button>
+          )}
+        </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+        <div className="filter-group">
+          <span className="filter-label">種別</span>
+          <div className="chip-scroll">
+            {TYPES.map((t) => (
+              <button
+                key={t}
+                type="button"
+                className={`chip ${typeFilter === t ? 'on' : ''}`}
+                onClick={() => setTypeFilter(t)}
+              >
+                {TYPE_LABEL[t] ?? t}
+                {t === 'fav' ? `（${favorites.length}）` : ''}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="filter-group">
+          <span className="filter-label">駅・エリア</span>
+          <div className="chip-scroll">
+            {AREAS.map((a) => (
+              <button
+                key={a}
+                type="button"
+                className={`chip ${areaFilter === a ? 'on' : ''}`}
+                onClick={() => setAreaFilter(a)}
+              >
+                {AREA_LABEL[a] ?? a}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {list.length === 0 && (
+        <p className="empty">条件に一致する施設がありません。フィルタや検索語句を変更してください。</p>
+      )}
+
+      <div className="nursery-list">
         {list.map((n) => {
           const fav = favorites.includes(n.id)
+          const selectedTags = tagsMap[n.id] || []
+          const expanded = fav || Boolean(memos[n.id]) || selectedTags.length > 0
           return (
-            <div
-              key={n.id}
-              style={{
-                border: '1px solid #eee',
-                borderRadius: '10px',
-                padding: '0.8rem 1rem',
-                background: '#fff',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.8rem',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                <div style={{ flex: 1 }}>
-                  <span style={{ fontSize: '0.72rem', background: '#e0f2e9', color: '#2b7055', padding: '2px 6px', borderRadius: '4px' }}>
-                    {n.type}
-                  </span>
-                  <div style={{ margin: '0.25rem 0 0', fontWeight: 700 }}>{n.name}</div>
-                  {n.note && <div style={{ fontSize: '0.8rem', color: '#666' }}>{n.note}</div>}
+            <article key={n.id} className={`nursery-card ${fav ? 'is-fav' : ''}`}>
+              <div className="nursery-top">
+                <div className="nursery-main">
+                  <div className="badges">
+                    <span className="badge type-badge">{n.type}</span>
+                    {n.area && <span className="badge area-badge">{n.area}エリア</span>}
+                    {n.age && <span className="badge age-badge">対象：{n.age}</span>}
+                  </div>
+                  <h3>{n.name}</h3>
+                  <div className="nursery-meta">
+                    {n.station && <span>最寄：{n.station}</span>}
+                    {n.address && <span>所在地：{n.address}</span>}
+                  </div>
+                  {n.note && <p className="nursery-note">{n.note}</p>}
                 </div>
-                <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
-                  <a href={n.url || searchUrl(n)} target="_blank" rel="noreferrer" title={n.url ? '公式サイトを見る' : 'Webで検索'} style={{ fontSize: '1.2rem', textDecoration: 'none' }}>
-                    {n.url ? '🌐' : '🔍'}
-                  </a>
-                  <a href={mapUrl(n.name)} target="_blank" rel="noreferrer" title="地図で見る" style={{ fontSize: '1.3rem', textDecoration: 'none' }}>
-                    📍
-                  </a>
+
+                <div className="nursery-actions">
                   <button
+                    type="button"
+                    className={`fav-btn ${fav ? 'on' : ''}`}
                     onClick={() => toggleFavorite(n.id)}
-                    aria-label="お気に入り"
-                    style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: fav ? '#f5b400' : '#ccc', padding: 0 }}
                   >
-                    {fav ? '★' : '☆'}
+                    {fav ? '★ 候補済' : '☆ 候補に追加'}
                   </button>
+                  <div className="link-pair">
+                    <a href={n.url || searchUrl(n)} target="_blank" rel="noreferrer">
+                      {n.url ? '公式案内 ↗' : 'Web検索 ↗'}
+                    </a>
+                    <a href={mapUrl(n.name)} target="_blank" rel="noreferrer">
+                      地図 ↗
+                    </a>
+                    {n.custom && (
+                      <button type="button" className="ghost danger small-btn" onClick={() => deleteCustomNursery(n.id)}>
+                        削除
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-              
-              {(fav || memos[n.id]) && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.8rem', color: '#666', fontWeight: 'bold' }}>📝 見学メモ</span>
-                    <button onClick={() => insertChecklist(n.id)} style={{ fontSize: '0.75rem', background: '#e0f2e9', color: '#2b7055', border: '1px solid #2b7055', padding: '0.2rem 0.5rem', borderRadius: '4px', cursor: 'pointer' }}>
-                      📋 見学チェックリストを挿入
+
+              <div className="tag-bar">
+                {QUICK_TAGS.map((tag) => {
+                  const active = selectedTags.includes(tag)
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      className={`tag-chip ${active ? 'on' : ''}`}
+                      onClick={() => toggleTag(n.id, tag)}
+                    >
+                      {active ? '✓ ' : '+ '}
+                      {tag}
+                    </button>
+                  )
+                })}
+              </div>
+
+              {expanded && (
+                <div className="nursery-memo-box">
+                  <div className="memo-head">
+                    <span>見学・比較メモ</span>
+                    <button type="button" className="btn-inline" onClick={() => insertChecklist(n.id)}>
+                      見学確認テンプレートを挿入
                     </button>
                   </div>
                   <textarea
                     value={memos[n.id] || ''}
                     onChange={(e) => updateMemo(n.id, e.target.value)}
-                    placeholder="見学の感想やメモを夫婦で共有..."
-                    style={{
-                      width: '100%', boxSizing: 'border-box', padding: '0.6rem',
-                      borderRadius: '8px', border: '1px solid #e1e8e5',
-                      background: '#f9fbf9', fontSize: '0.9rem', color: '#333',
-                      resize: 'vertical', minHeight: '120px'
-                    }}
+                    placeholder="園の雰囲気、先生の対応、父母会・行事の頻度、通勤動線などを記録..."
+                    rows={4}
                   />
                 </div>
               )}
-            </div>
+            </article>
           )
         })}
       </div>
-    </div>
+    </section>
   )
 }
