@@ -157,6 +157,47 @@ export const TASKS: TaskDef[] = [
     ...SRC.ikukyu,
   },
   {
+    id: 'preg-maternity-wear',
+    title: 'マタニティウェア・腰痛対策グッズ（骨盤ベルト・抱き枕）の準備',
+    phase: 'pregnancy', priority: 'recommend', role: 'together', anchor: 'due',
+    startOffset: wk(12), endOffset: wk(24),
+    summary: 'お腹が出始める妊娠4〜5か月頃から、骨盤の緩みや重心の変化で腰痛・恥骨痛や寝苦しさが出やすくなります。締め付けのないマタニティウェア・レギンスに加え、産前産後兼用の骨盤ベルト（トコちゃんベルト等）や横向き寝（シムス位）を支える抱き枕を早めに揃えておくと体が格段に楽になります。',
+    papaNote: '「腰が痛い」「眠りづらい」というサインが出たら一緒に選んであげましょう。重い荷物を持つことや風呂掃除・床掃除など腰に負担がかかる家事はパパが引き継ぐタイミングです。',
+    checklist: [
+      '骨盤ベルト（産前産後兼用・トコちゃんベルト等）',
+      'マタニティ抱き枕・授乳クッション兼用枕（シムス位サポート）',
+      'マタニティレギンス・アジャスター付きボトムス',
+      'マタニティワンピース・授乳口付きトップス（産後も使えるもの）',
+      'マタニティショーツ・ノンワイヤー授乳ブラ',
+      '骨盤サポートクッション・円座クッション（座り仕事や産後の会陰保護にも）',
+      '歩きやすいローヒール靴・スニーカー（むくみ・転倒防止）'
+    ],
+    affiliate: [
+      { url: 'https://www.amazon.co.jp/s?k=%E9%AA%A8%E7%9B%A4%E3%83%99%E3%83%AB%E3%83%88+%E3%83%9E%E3%82%BF%E3%83%8B%E3%83%86%E3%82%A3+%E7%94%A3%E5%89%8D%E7%94%A3%E5%BE%8C&tag=milkkurumix02-22', label: '産前産後使える骨盤ベルト（トコちゃんベルト・ワコール・ピジョン等）', icon: '🦴' },
+      { url: 'https://www.amazon.co.jp/s?k=%E3%83%9E%E3%82%BF%E3%83%8B%E3%83%86%E3%82%A3+%E6%8A%B1%E3%81%8D%E6%9E%95+%E6%8E%88%E4%B9%B3%E3%82%AF%E3%83%83%E3%82%B7%E3%83%A7%E3%83%B3&tag=milkkurumix02-22', label: 'マタニティ抱き枕・授乳クッション兼用（腰痛・寝苦しさ対策）', icon: '🛏️' },
+      { url: 'https://www.amazon.co.jp/s?k=%E3%83%9E%E3%82%BF%E3%83%8B%E3%83%86%E3%82%A3%E3%82%A6%E3%82%A7%E3%82%A2+%E6%8E%88%E4%B9%B3%E6%9C%8D+%E3%83%9E%E3%82%BF%E3%83%8B%E3%83%86%E3%82%A3%E3%83%AC%E3%82%AE%E3%83%B3%E3%82%B9&tag=milkkurumix02-22', label: 'マタニティウェア・レギンス・授乳服を探す', icon: '👗' },
+      { url: 'https://www.amazon.co.jp/s?k=%E5%86%86%E5%BA%A7%E3%82%AF%E3%83%83%E3%82%B7%E3%83%A7%E3%83%B3+%E7%94%A3%E5%BE%8C+%E9%AA%A8%E7%9B%A4%E3%82%AF%E3%83%83%E3%82%B7%E3%83%A7%E3%83%B3&tag=milkkurumix02-22', label: '骨盤サポート・産後兼用円座クッション', icon: '🪑' }
+    ]
+  },
+  {
+    id: 'preg-anzan',
+    title: '帯祝い・戌の日の安産祈願（道野辺八幡宮など）',
+    phase: 'pregnancy', priority: 'recommend', role: 'together', anchor: 'due',
+    startOffset: wk(16), endOffset: wk(22),
+    deadlineLabel: '目安：妊娠5か月（16週〜）の戌の日頃（体調優先で週末等でもOK）',
+    summary: '妊娠5か月に入った最初の「戌（いぬ）の日」頃に、腹帯（岩田帯・妊婦帯）を巻いて母子の健康と安産を祈願する伝統行事です。鎌ケ谷市内では総守護神の「道野辺八幡宮」（東武野田線 鎌ケ谷駅徒歩約5分・予約不要・毎日9:00〜16:00受付）が定番で、持参した腹帯・妊婦帯も神前でお祓いしてもらえます。',
+    money: '初穂料（祈祷料）目安：5,000円〜10,000円〜',
+    place: '道野辺八幡宮（道野辺中央5-6-10・TEL 047-444-7169）ほか近隣の神社・寺院',
+    bring: ['初穂料（のし袋または白い封筒）', '腹帯・妊婦帯（持参してお祓いを受ける場合）', '母子健康手帳'],
+    papaNote: '戌の日当日は混み合うこともあるため、ママの体調を最優先に週末や大安の日を選んでも大丈夫です。境内の階段や段差では足元をサポートしましょう。',
+    durationMin: 60,
+    sourceUrl: 'https://www.hachiman-gu.com/',
+    sourceLabel: '道野辺八幡宮 公式ホームページ',
+    affiliate: [
+      { url: 'https://www.amazon.co.jp/s?k=%E5%A6%8A%E5%A9%A6%E5%B8%AF+%E8%85%B9%E5%B8%AF+%E6%88%8C%E3%81%AE%E6%97%A5+%E7%8A%AC%E5%8D%B0&tag=milkkurumix02-22', label: '犬印本舗・ピジョン等の妊婦帯・腹帯（戌の日のお参り＆腰痛保温サポート）', icon: '⛩️' }
+    ]
+  },
+  {
     id: 'preg-nenkin',
     title: '国民年金 産前産後期間の保険料免除を届出',
     phase: 'pregnancy', priority: 'optional', role: 'mama', anchor: 'due',
@@ -249,6 +290,8 @@ export const TASKS: TaskDef[] = [
       '印鑑・筆記用具',
       '前開きマタニティパジャマ（2〜3着）',
       '産褥ショーツ・授乳用ブラ',
+      '骨盤ベルト（産後すぐからの骨盤ケア・腰痛対策）',
+      '円座クッション（産後の座り痛み対策・産院にない場合）',
       '洗面用具・スキンケア・リップクリーム',
       '産褥パッド・お産用パッド',
       'スマホの充電器・モバイルバッテリー',
@@ -256,7 +299,8 @@ export const TASKS: TaskDef[] = [
       '飲み物・ストローキャップ・軽食'
     ],
     affiliate: [
-      { url: 'https://www.amazon.co.jp/s?k=%E5%87%BA%E7%94%A3%E6%BA%96%E5%82%99+%E5%85%A5%E9%99%A2+%E3%83%9E%E3%82%BF%E3%83%8B%E3%83%86%E3%82%A3%E3%83%91%E3%82%B8%E3%83%A3%E3%83%9E&tag=milkkurumix02-22', label: '前開きマタニティパジャマ・産褥ショーツ', icon: '👜' }
+      { url: 'https://www.amazon.co.jp/s?k=%E5%87%BA%E7%94%A3%E6%BA%96%E5%82%99+%E5%85%A5%E9%99%A2+%E3%83%9E%E3%82%BF%E3%83%8B%E3%83%86%E3%82%A3%E3%83%91%E3%82%B8%E3%83%A3%E3%83%9E&tag=milkkurumix02-22', label: '前開きマタニティパジャマ・産褥ショーツ', icon: '👜' },
+      { url: 'https://www.amazon.co.jp/s?k=%E7%94%A3%E5%BE%8C+%E9%AA%A8%E7%9B%A4%E3%83%99%E3%83%AB%E3%83%88+%E5%86%86%E5%BA%A7%E3%82%AF%E3%83%83%E3%82%B7%E3%83%A7%E3%83%B3&tag=milkkurumix02-22', label: '産後の骨盤ベルト・円座クッション（腰痛・会陰の痛み対策）', icon: '🦴' }
     ]
   },
   {

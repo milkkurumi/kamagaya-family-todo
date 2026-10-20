@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { HOKATSU_GUIDE, NURSERIES, mapUrl, searchUrl } from '../data/nurseries'
 import type { Nursery, NurseryArea, NurseryFeature, NurseryType } from '../data/nurseries'
 import type { CustomNurseryItem, Settings } from '../types'
+import { formatPhoneNumber } from '../lib/phone'
 
 interface NurseryListProps {
   settings: Settings
@@ -81,6 +82,7 @@ export function NurseryList({ settings, onUpdateSettings }: NurseryListProps) {
   const [newName, setNewName] = useState('')
   const [newType, setNewType] = useState('認可外・その他')
   const [newStation, setNewStation] = useState('')
+  const [newTel, setNewTel] = useState('')
   const [newUrl, setNewUrl] = useState('')
   const [newNote, setNewNote] = useState('')
 
@@ -99,6 +101,7 @@ export function NurseryList({ settings, onUpdateSettings }: NurseryListProps) {
       type: (c.type as NurseryType) || '私立保育園',
       area: '新鎌ケ谷' as NurseryArea,
       station: c.station,
+      tel: c.tel ? formatPhoneNumber(c.tel) : undefined,
       note: c.note,
       url: c.url,
       custom: true,
@@ -187,6 +190,7 @@ export function NurseryList({ settings, onUpdateSettings }: NurseryListProps) {
       name: newName.trim(),
       type: newType,
       station: newStation.trim() || undefined,
+      tel: newTel.trim() ? formatPhoneNumber(newTel.trim()) : undefined,
       url: newUrl.trim() || undefined,
       note: newNote.trim() || undefined,
     }
@@ -198,6 +202,7 @@ export function NurseryList({ settings, onUpdateSettings }: NurseryListProps) {
     })
     setNewName('')
     setNewStation('')
+    setNewTel('')
     setNewUrl('')
     setNewNote('')
     setShowAdd(false)
@@ -268,6 +273,23 @@ export function NurseryList({ settings, onUpdateSettings }: NurseryListProps) {
       }
       return 0
     })
+
+  const hasNurseryFilter =
+    typeFilter !== 'all' || areaFilter !== 'all' || featureFilters.length > 0 || Boolean(query.trim())
+
+  const activeNurseryFilterLabels = [
+    typeFilter !== 'all' ? `種別：${TYPE_LABEL[typeFilter] ?? typeFilter}` : '',
+    areaFilter !== 'all' ? `エリア：${areaFilter}` : '',
+    featureFilters.length > 0 ? `条件：${featureFilters.join('・')}` : '',
+    query.trim() ? `検索：「${query.trim()}」` : '',
+  ].filter(Boolean)
+
+  const clearNurseryFilters = () => {
+    setTypeFilter('all')
+    setAreaFilter('all')
+    setFeatureFilters([])
+    setQuery('')
+  }
 
   return (
     <section className="section-block">
@@ -360,6 +382,16 @@ export function NurseryList({ settings, onUpdateSettings }: NurseryListProps) {
               <input value={newStation} onChange={(e) => setNewStation(e.target.value)} placeholder="例：新鎌ケ谷駅 徒歩5分" />
             </label>
             <label>
+              電話番号（任意・ハイフン自動整形）
+              <input
+                type="tel"
+                value={newTel}
+                onChange={(e) => setNewTel(formatPhoneNumber(e.target.value))}
+                onBlur={(e) => setNewTel(formatPhoneNumber(e.target.value))}
+                placeholder="例：047-445-0000"
+              />
+            </label>
+            <label>
               公式HPのURL（任意）
               <input value={newUrl} onChange={(e) => setNewUrl(e.target.value)} placeholder="https://..." />
             </label>
@@ -376,7 +408,7 @@ export function NurseryList({ settings, onUpdateSettings }: NurseryListProps) {
         </div>
       )}
 
-      <div className="filter-stack">
+      <div className={`filter-stack ${hasNurseryFilter ? 'is-filtered' : ''}`}>
         <div className="search-row">
           <input
             type="search"
@@ -394,39 +426,54 @@ export function NurseryList({ settings, onUpdateSettings }: NurseryListProps) {
         <div className="filter-group">
           <span className="filter-label">施設種別</span>
           <div className="chip-scroll">
-            {TYPES.map((t) => (
-              <button
-                key={t}
-                type="button"
-                className={`chip ${typeFilter === t ? 'on' : ''}`}
-                onClick={() => setTypeFilter(t)}
-              >
-                {TYPE_LABEL[t] ?? t}
-                {t === 'fav' ? `（${candidateCount}）` : ''}
-              </button>
-            ))}
+            {TYPES.map((t) => {
+              const active = typeFilter === t
+              return (
+                <button
+                  key={t}
+                  type="button"
+                  className={`chip ${active ? 'on' : ''}`}
+                  onClick={() => setTypeFilter(active && t !== 'all' ? 'all' : t)}
+                >
+                  {active ? '✓ ' : ''}
+                  {TYPE_LABEL[t] ?? t}
+                  {t === 'fav' ? `（${candidateCount}）` : ''}
+                </button>
+              )
+            })}
           </div>
         </div>
 
         <div className="filter-group">
           <span className="filter-label">駅エリア</span>
           <div className="chip-scroll">
-            {AREAS.map((a) => (
-              <button
-                key={a}
-                type="button"
-                className={`chip ${areaFilter === a ? 'on' : ''}`}
-                onClick={() => setAreaFilter(a)}
-              >
-                {AREA_LABEL[a] ?? a}
-              </button>
-            ))}
+            {AREAS.map((a) => {
+              const active = areaFilter === a
+              return (
+                <button
+                  key={a}
+                  type="button"
+                  className={`chip ${active ? 'on' : ''}`}
+                  onClick={() => setAreaFilter(active && a !== 'all' ? 'all' : a)}
+                >
+                  {active ? '✓ ' : ''}
+                  {AREA_LABEL[a] ?? a}
+                </button>
+              )
+            })}
           </div>
         </div>
 
         <div className="filter-group">
           <span className="filter-label">園の条件</span>
           <div className="chip-scroll">
+            <button
+              type="button"
+              className={`chip ${featureFilters.length === 0 ? 'on' : ''}`}
+              onClick={() => setFeatureFilters([])}
+            >
+              {featureFilters.length === 0 ? '✓ ' : ''}指定なし
+            </button>
             {FEATURES.map((feat) => {
               const active = featureFilters.includes(feat)
               return (
@@ -441,12 +488,23 @@ export function NurseryList({ settings, onUpdateSettings }: NurseryListProps) {
                 </button>
               )
             })}
-            {featureFilters.length > 0 && (
-              <button type="button" className="btn-inline" onClick={() => setFeatureFilters([])}>
-                条件クリア
-              </button>
-            )}
           </div>
+        </div>
+
+        <div className="filter-footer-row">
+          {hasNurseryFilter ? (
+            <div className="active-filter-banner">
+              <span className="active-filter-text">
+                <strong>フィルター適用中（{filtered.length}/{allNurseries.length}施設を表示）：</strong>
+                {activeNurseryFilterLabels.join(' ／ ')}
+              </span>
+              <button type="button" className="filter-reset-btn" onClick={clearNurseryFilters}>
+                ✕ 絞り込みをすべて解除
+              </button>
+            </div>
+          ) : (
+            <span className="filter-idle-text">フィルターなし（全{allNurseries.length}施設を表示中）</span>
+          )}
         </div>
       </div>
 

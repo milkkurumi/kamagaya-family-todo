@@ -10,6 +10,7 @@ import { SettingsPanel } from './components/SettingsPanel'
 import { NurseryList } from './components/NurseryList'
 import { Onboarding } from './components/Onboarding'
 import { MoneySimulation } from './components/MoneySimulation'
+import { formatPhoneNumber } from './lib/phone'
 
 type Tab = 'now' | 'timeline' | 'scheduled' | 'nursery' | 'money'
 
@@ -25,8 +26,8 @@ export default function App() {
     const s = data.settings
     return !Boolean(s.configured || s.dueDate || s.birthDate)
   })
-  const [priorities, setPriorities] = useState<Priority[]>(['must', 'recommend', 'optional'])
-  const [roles, setRoles] = useState<Role[]>(['papa', 'together', 'mama'])
+  const [priorityFilter, setPriorityFilter] = useState<'all' | Priority>('all')
+  const [roleFilter, setRoleFilter] = useState<'all' | Role>('all')
   const [hideClosed, setHideClosed] = useState(true)
   const [toast, setToast] = useState('')
   const [focusId, setFocusId] = useState<string | undefined>()
@@ -55,16 +56,29 @@ export default function App() {
   const views = useMemo(() => buildViews(TASKS, data.tasks, settings), [data.tasks, settings])
 
   const filtered = views.filter((v) => {
-    if (!priorities.includes(v.task.priority)) return false
-    if (!roles.includes(v.task.role)) return false
+    if (priorityFilter !== 'all' && v.task.priority !== priorityFilter) return false
+    if (roleFilter !== 'all' && v.task.role !== roleFilter) return false
     if (hideClosed && (v.state.status === 'done' || v.state.status === 'skip')) return false
     if (taskQuery.trim()) {
       const q = taskQuery.trim().toLowerCase()
-      const hay = `${v.task.title} ${v.task.summary} ${v.task.place || ''} ${(v.task.bring || []).join(' ')} ${v.state.memo || ''}`.toLowerCase()
+      const hay = `${v.task.title} ${v.task.summary} ${v.task.place || ''} ${(v.task.bring || []).join(' ')} ${(v.task.checklist || []).join(' ')} ${v.state.memo || ''}`.toLowerCase()
       if (!hay.includes(q)) return false
     }
     return true
   })
+
+  const hasTaskFilter = priorityFilter !== 'all' || roleFilter !== 'all' || Boolean(taskQuery.trim())
+  const activeTaskFilterLabels = [
+    priorityFilter !== 'all' ? `優先度：${PRIORITY[priorityFilter].short}` : '',
+    roleFilter !== 'all' ? `担当：${ROLE[roleFilter].label}` : '',
+    taskQuery.trim() ? `検索：「${taskQuery.trim()}」` : '',
+  ].filter(Boolean)
+
+  const clearTaskFilters = () => {
+    setPriorityFilter('all')
+    setRoleFilter('all')
+    setTaskQuery('')
+  }
 
   const updateTask = (id: string, patch: Partial<TaskState>) =>
     setData((d) => ({
@@ -123,8 +137,8 @@ export default function App() {
   }
 
   const jumpToTask = (id: string) => {
-    setPriorities(['must', 'recommend', 'optional'])
-    setRoles(['papa', 'together', 'mama'])
+    setPriorityFilter('all')
+    setRoleFilter('all')
     setHideClosed(false)
     setTaskQuery('')
     setFocusId(id)
@@ -136,11 +150,6 @@ export default function App() {
     setData((d) => ({ ...d, settings: { ...s, configured: true } }))
     setShowSettings(false)
   }
-
-  const toggle = <T,>(list: T[], v: T, set: (l: T[]) => void) =>
-    set(list.includes(v) ? list.filter((x) => x !== v) : [...list, v])
-
-  const papaMode = roles.length === 1 && roles[0] === 'papa'
 
   const copyShare = async () => {
     const url = shareUrl(data)
@@ -267,8 +276,8 @@ export default function App() {
             <div className="emergency-card user-contact">
               <span className="em-label">登録済みの産院</span>
               {settings.emergencyContacts?.hospital ? (
-                <a href={`tel:${settings.emergencyContacts.hospital}`} className="em-tel">
-                  {settings.emergencyContacts.hospital}
+                <a href={`tel:${formatPhoneNumber(settings.emergencyContacts.hospital)}`} className="em-tel">
+                  {formatPhoneNumber(settings.emergencyContacts.hospital)}
                 </a>
               ) : (
                 <button type="button" className="btn-inline" onClick={() => setShowSettings(true)}>
@@ -279,8 +288,8 @@ export default function App() {
             <div className="emergency-card user-contact">
               <span className="em-label">登録済みの陣痛タクシー</span>
               {settings.emergencyContacts?.taxi ? (
-                <a href={`tel:${settings.emergencyContacts.taxi}`} className="em-tel">
-                  {settings.emergencyContacts.taxi}
+                <a href={`tel:${formatPhoneNumber(settings.emergencyContacts.taxi)}`} className="em-tel">
+                  {formatPhoneNumber(settings.emergencyContacts.taxi)}
                 </a>
               ) : (
                 <button type="button" className="btn-inline" onClick={() => setShowSettings(true)}>
@@ -357,22 +366,15 @@ export default function App() {
       </nav>
 
       {(tab === 'now' || tab === 'timeline') && (
-        <section className="filters">
-          <div className="toolbar-row">
+        <section className={`filter-stack ${hasTaskFilter ? 'is-filtered' : ''}`}>
+          <div className="search-row">
             <input
               type="search"
               className="task-search"
               value={taskQuery}
               onChange={(e) => setTaskQuery(e.target.value)}
-              placeholder="タスク名・窓口・持ち物で検索..."
+              placeholder="タスク名・窓口・持ち物・グッズ（安産祈願、骨盤ベルトなど）で検索..."
             />
-            <button
-              type="button"
-              className={`papa-mode ${papaMode ? 'on' : ''}`}
-              onClick={() => setRoles(papaMode ? ['papa', 'together', 'mama'] : ['papa'])}
-            >
-              パパ単独OKのみ{papaMode ? '（解除）' : ''}
-            </button>
             <button type="button" onClick={() => setShowAddTask(!showAddTask)}>
               {showAddTask ? '閉じる' : '+ タスクを追加'}
             </button>
@@ -445,27 +447,75 @@ export default function App() {
             </div>
           )}
 
-          <div className="chips">
-            {(Object.keys(PRIORITY) as Priority[]).map((p) => (
+          <div className="filter-group">
+            <span className="filter-label">優先度</span>
+            <div className="chip-scroll">
               <button
-                key={p}
                 type="button"
-                className={`chip pri-${p} ${priorities.includes(p) ? 'on' : ''}`}
-                onClick={() => toggle(priorities, p, setPriorities)}
+                className={`chip ${priorityFilter === 'all' ? 'on' : ''}`}
+                onClick={() => setPriorityFilter('all')}
               >
-                {PRIORITY[p].short}
+                {priorityFilter === 'all' ? '✓ ' : ''}すべて
               </button>
-            ))}
-            {(Object.keys(ROLE) as Role[]).map((r) => (
+              {(Object.keys(PRIORITY) as Priority[]).map((p) => {
+                const active = priorityFilter === p
+                return (
+                  <button
+                    key={p}
+                    type="button"
+                    className={`chip pri-${p} ${active ? 'on' : ''}`}
+                    onClick={() => setPriorityFilter(active ? 'all' : p)}
+                  >
+                    {active ? '✓ ' : ''}
+                    {PRIORITY[p].short}のみ
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <span className="filter-label">担当</span>
+            <div className="chip-scroll">
               <button
-                key={r}
                 type="button"
-                className={`chip role-${r} ${roles.includes(r) ? 'on' : ''}`}
-                onClick={() => toggle(roles, r, setRoles)}
+                className={`chip ${roleFilter === 'all' ? 'on' : ''}`}
+                onClick={() => setRoleFilter('all')}
               >
-                {ROLE[r].label}
+                {roleFilter === 'all' ? '✓ ' : ''}すべて
               </button>
-            ))}
+              {(Object.keys(ROLE) as Role[]).map((r) => {
+                const active = roleFilter === r
+                return (
+                  <button
+                    key={r}
+                    type="button"
+                    className={`chip role-${r} ${active ? 'on' : ''}`}
+                    onClick={() => setRoleFilter(active ? 'all' : r)}
+                  >
+                    {active ? '✓ ' : ''}
+                    {ROLE[r].label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="filter-footer-row">
+            {hasTaskFilter ? (
+              <div className="active-filter-banner">
+                <span className="active-filter-text">
+                  <strong>フィルター適用中：</strong>
+                  {activeTaskFilterLabels.join(' ／ ')}
+                </span>
+                <button type="button" className="filter-reset-btn" onClick={clearTaskFilters}>
+                  ✕ 絞り込みをすべて解除
+                </button>
+              </div>
+            ) : (
+              <span className="filter-idle-text">フィルターなし（全条件を表示中）</span>
+            )}
+
             <label className="check small">
               <input type="checkbox" checked={hideClosed} onChange={(e) => setHideClosed(e.target.checked)} />
               完了・対象外を隠す

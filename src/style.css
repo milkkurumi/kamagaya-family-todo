@@ -433,18 +433,6 @@ label.small {
   flex: 1 1 220px;
 }
 
-.papa-mode {
-  border-color: var(--papa);
-  color: var(--papa);
-  background: var(--surface);
-}
-
-.papa-mode.on {
-  background: var(--papa);
-  border-color: var(--papa);
-  color: #ffffff;
-}
-
 .chips {
   display: flex;
   flex-wrap: wrap;
@@ -454,55 +442,69 @@ label.small {
 
 .chip {
   font-size: 0.78rem;
-  padding: 0.26rem 0.68rem;
-  border-radius: 4px;
+  padding: 0.28rem 0.72rem;
+  border-radius: 5px;
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   color: var(--sub);
   font-weight: 500;
+  white-space: nowrap;
 }
 
-.chip.on {
+.chip:hover:not(:disabled) {
+  background: var(--surface-sub);
+  color: var(--ink);
+}
+
+.chip.on,
+.chip.on:hover:not(:disabled) {
   border-color: var(--primary);
-  background: var(--primary-soft);
-  color: var(--primary);
+  background: var(--primary);
+  color: #ffffff;
   font-weight: 700;
+  box-shadow: 0 1px 3px rgba(38, 83, 67, 0.22);
 }
 
-.chip.pri-must.on {
-  background: var(--must-soft);
-  border-color: #dfa39e;
-  color: var(--must);
+.chip.pri-must.on,
+.chip.pri-must.on:hover:not(:disabled) {
+  background: var(--must);
+  border-color: var(--must);
+  color: #ffffff;
 }
 
-.chip.pri-recommend.on {
-  background: var(--rec-soft);
-  border-color: #dfc392;
-  color: var(--rec);
+.chip.pri-recommend.on,
+.chip.pri-recommend.on:hover:not(:disabled) {
+  background: var(--rec);
+  border-color: var(--rec);
+  color: #ffffff;
 }
 
-.chip.pri-optional.on {
-  background: var(--opt-soft);
-  border-color: #a7cfbe;
-  color: var(--opt);
+.chip.pri-optional.on,
+.chip.pri-optional.on:hover:not(:disabled) {
+  background: var(--opt);
+  border-color: var(--opt);
+  color: #ffffff;
 }
 
-.chip.role-papa.on {
-  background: var(--papa-soft);
-  border-color: #a3bee0;
-  color: var(--papa);
+.chip.role-papa.on,
+.chip.role-papa.on:hover:not(:disabled) {
+  background: var(--papa);
+  border-color: var(--papa);
+  color: #ffffff;
 }
 
-.chip.role-together.on {
-  background: var(--together-soft);
-  border-color: #bfb2d9;
-  color: var(--together);
+.chip.role-together.on,
+.chip.role-together.on:hover:not(:disabled) {
+  background: var(--together);
+  border-color: var(--together);
+  color: #ffffff;
 }
 
-.chip.role-mama.on {
-  background: var(--mama-soft);
-  border-color: #dbb0c3;
-  color: var(--mama);
+.chip.role-mama.on,
+.chip.role-mama.on:hover:not(:disabled) {
+  background: var(--mama);
+  border-color: var(--mama);
+  color: #ffffff;
 }
 
 /* ───────── Badges ───────── */
@@ -1147,7 +1149,62 @@ label.small {
   margin-bottom: 1rem;
   display: flex;
   flex-direction: column;
+  gap: 0.6rem;
+}
+
+.filter-stack.is-filtered {
+  border-color: var(--primary);
+  border-left: 4px solid var(--primary);
+  background: #fbfcfa;
+}
+
+.filter-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 0.65rem;
+  flex-wrap: wrap;
+  padding-top: 0.45rem;
+  border-top: 1px dashed var(--line);
+}
+
+.active-filter-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  flex: 1 1 280px;
+  background: var(--primary-soft);
+  border: 1px solid #b6d0c2;
+  color: var(--primary);
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+}
+
+.active-filter-text strong {
+  font-weight: 700;
+}
+
+.filter-reset-btn {
+  padding: 0.2rem 0.55rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  background: var(--surface);
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  border-radius: 4px;
+}
+
+.filter-reset-btn:hover:not(:disabled) {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.filter-idle-text {
+  font-size: 0.76rem;
+  color: var(--muted);
 }
 
 .search-row {

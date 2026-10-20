@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { Settings } from '../types'
+import { formatPhoneNumber } from '../lib/phone'
 
 interface Props {
   settings: Settings
@@ -20,7 +21,15 @@ export function SettingsPanel({ settings, onSave, onClose, onReset, initial }: P
   const set = (patch: Partial<Settings>) => setS({ ...s, ...patch })
 
   const submit = () => {
-    const next = { ...s }
+    const next: Settings = {
+      ...s,
+      emergencyContacts: s.emergencyContacts
+        ? {
+            hospital: s.emergencyContacts.hospital ? formatPhoneNumber(s.emergencyContacts.hospital) : undefined,
+            taxi: s.emergencyContacts.taxi ? formatPhoneNumber(s.emergencyContacts.taxi) : undefined,
+          }
+        : undefined,
+    }
     if (stage === 'prep') {
       next.dueDate = undefined
       next.birthDate = undefined
@@ -94,17 +103,24 @@ export function SettingsPanel({ settings, onSave, onClose, onReset, initial }: P
 
       <details open={!initial}>
         <summary>かかりつけ産院・陣痛タクシーの電話番号（任意）</summary>
-        <p className="hint">登録すると、上部「緊急・相談窓口」バーからワンタップで発信できます。</p>
+        <p className="hint">
+          登録すると、上部「緊急・相談窓口」バーからワンタップで発信できます（ハイフンなしで入力しても自動でハイフンが入ります）。
+        </p>
         <div className="form-grid">
           <label>
             産院の電話番号
             <input
               type="tel"
               value={s.emergencyContacts?.hospital ?? ''}
-              placeholder="047-000-0000"
-              onChange={(e) =>
-                set({ emergencyContacts: { ...s.emergencyContacts, hospital: e.target.value || undefined } })
-              }
+              placeholder="例：047-445-0000（ハイフンなし可）"
+              onChange={(e) => {
+                const formatted = formatPhoneNumber(e.target.value)
+                set({ emergencyContacts: { ...s.emergencyContacts, hospital: formatted || undefined } })
+              }}
+              onBlur={(e) => {
+                const formatted = formatPhoneNumber(e.target.value)
+                set({ emergencyContacts: { ...s.emergencyContacts, hospital: formatted || undefined } })
+              }}
             />
           </label>
           <label>
@@ -112,10 +128,15 @@ export function SettingsPanel({ settings, onSave, onClose, onReset, initial }: P
             <input
               type="tel"
               value={s.emergencyContacts?.taxi ?? ''}
-              placeholder="047-000-0000"
-              onChange={(e) =>
-                set({ emergencyContacts: { ...s.emergencyContacts, taxi: e.target.value || undefined } })
-              }
+              placeholder="例：047-445-0000（ハイフンなし可）"
+              onChange={(e) => {
+                const formatted = formatPhoneNumber(e.target.value)
+                set({ emergencyContacts: { ...s.emergencyContacts, taxi: formatted || undefined } })
+              }}
+              onBlur={(e) => {
+                const formatted = formatPhoneNumber(e.target.value)
+                set({ emergencyContacts: { ...s.emergencyContacts, taxi: formatted || undefined } })
+              }}
             />
           </label>
         </div>

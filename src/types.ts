@@ -72,6 +72,7 @@ export interface CustomNurseryItem {
   area?: string
   address?: string
   station?: string
+  tel?: string
   age?: string
   note?: string
   url?: string
