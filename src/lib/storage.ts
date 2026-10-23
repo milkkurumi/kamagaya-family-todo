@@ -1,1 +1,109 @@
-aW1wb3J0IHR5cGUgeyBBcHBEYXRhIH0gZnJvbSAnLi4vdHlwZXMnCgpjb25zdCBLRVkgPSAna2FtYWdheWEtZmFtaWx5LXRvZG86djEnCgpleHBvcnQgY29uc3QgRU1QVFk6IEFwcERhdGEgPSB7IHNldHRpbmdzOiB7IGZpcnN0Q2hpbGQ6IHRydWUgfSwgdGFza3M6IHt9IH0KCmV4cG9ydCBmdW5jdGlvbiBsb2FkKCk6IEFwcERhdGEgewogIHRyeSB7CiAgICBjb25zdCByYXcgPSBsb2NhbFN0b3JhZ2UuZ2V0SXRlbShLRVkpCiAgICBpZiAoIXJhdykgcmV0dXJuIEVNUFRZCiAgICBjb25zdCBkID0gSlNPTi5wYXJzZShyYXcpIGFzIEFwcERhdGEKICAgIHJldHVybiB7IHNldHRpbmdzOiB7IC4uLkVNUFRZLnNldHRpbmdzLCAuLi5kLnNldHRpbmdzIH0sIHRhc2tzOiBkLnRhc2tzID8/IHt9IH0KICB9IGNhdGNoIHsKICAgIHJldHVybiBFTVBUWQogIH0KfQoKZXhwb3J0IGZ1bmN0aW9uIHNhdmUoZDogQXBwRGF0YSkgewogIGxvY2FsU3RvcmFnZS5zZXRJdGVtKEtFWSwgSlNPTi5zdHJpbmdpZnkoZCkpCn0KCi8vIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgCDlpKvlqabplpPjga7lhbHmnInvvIhVUkzjg4/jg4Pjgrfjg6XjgavnirbmhYvjgpLln4vjgoHovrzjgoDvvIkg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACgpmdW5jdGlvbiB0b0I2NFVybChzOiBzdHJpbmcpIHsKICBjb25zdCBieXRlcyA9IG5ldyBUZXh0RW5jb2RlcigpLmVuY29kZShzKQogIGxldCBiaW4gPSAnJwogIGJ5dGVzLmZvckVhY2goKGIpID0+IChiaW4gKz0gU3RyaW5nLmZyb21DaGFyQ29kZShiKSkpCiAgcmV0dXJuIGJ0b2EoYmluKS5yZXBsYWNlKC9cKy9nLCAnLScpLnJlcGxhY2UoL1wvL2csICdfJykucmVwbGFjZSgvPSskLywgJycpCn0KCmZ1bmN0aW9uIGZyb21CNjRVcmwoczogc3RyaW5nKSB7CiAgY29uc3QgYjY0ID0gcy5yZXBsYWNlKC8tL2csICcrJykucmVwbGFjZSgvXy9nLCAnLycpCiAgY29uc3QgYmluID0gYXRvYihiNjQpCiAgcmV0dXJuIG5ldyBUZXh0RGVjb2RlcigpLmRlY29kZShVaW50OEFycmF5LmZyb20oYmluLCAoYykgPT4gYy5jaGFyQ29kZUF0KDApKSkKfQoKZXhwb3J0IGZ1bmN0aW9uIHNoYXJlVXJsKGQ6IEFwcERhdGEpOiBzdHJpbmcgewogIGNvbnN0IHVybCA9IG5ldyBVUkwobG9jYXRpb24uaHJlZikKICB1cmwuaGFzaCA9IGBzaGFyZT0ke3RvQjY0VXJsKEpTT04uc3RyaW5naWZ5KGQpKX1gCiAgcmV0dXJuIHVybC50b1N0cmluZygpCn0KCmV4cG9ydCBmdW5jdGlvbiByZWFkU2hhcmVkKCk6IEFwcERhdGEgfCB1bmRlZmluZWQgewogIGNvbnN0IG0gPSBsb2NhdGlvbi5oYXNoLm1hdGNoKC9zaGFyZT0oW14mXSspLykKICBpZiAoIW0pIHJldHVybiB1bmRlZmluZWQKICB0cnkgewogICAgY29uc3QgZCA9IEpTT04ucGFyc2UoZnJvbUI2NFVybChtWzFdKSkgYXMgQXBwRGF0YQogICAgcmV0dXJuIHsgc2V0dGluZ3M6IHsgLi4uRU1QVFkuc2V0dGluZ3MsIC4uLmQuc2V0dGluZ3MgfSwgdGFza3M6IGQudGFza3MgPz8ge30gfQogIH0gY2F0Y2ggewogICAgcmV0dXJuIHVuZGVmaW5lZAogIH0KfQoKZXhwb3J0IGZ1bmN0aW9uIGNsZWFySGFzaCgpIHsKICBoaXN0b3J5LnJlcGxhY2VTdGF0ZShudWxsLCAnJywgbG9jYXRpb24ucGF0aG5hbWUgKyBsb2NhdGlvbi5zZWFyY2gpCn0KCi8vIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgCDjg5Djg4Pjgq/jgqLjg4Pjg5fvvIhKU09O5pu444GN5Ye644GX44O75qSc6Ki844O76Kqt44G/6L6844G/77yJIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAoKY29uc3QgVkFMSURfU1RBVFVTRVMgPSBuZXcgU2V0KFsndG9kbycsICdzY2hlZHVsZWQnLCAnZG9uZScsICdza2lwJ10pCgpleHBvcnQgZnVuY3Rpb24gcGFyc2VCYWNrdXBKc29uKHJhdzogc3RyaW5nKTogQXBwRGF0YSB8IHVuZGVmaW5lZCB7CiAgdHJ5IHsKICAgIGNvbnN0IHBhcnNlZDogdW5rbm93biA9IEpTT04ucGFyc2UocmF3KQogICAgaWYgKCFwYXJzZWQgfHwgdHlwZW9mIHBhcnNlZCAhPT0gJ29iamVjdCcgfHwgQXJyYXkuaXNBcnJheShwYXJzZWQpKSByZXR1cm4gdW5kZWZpbmVkCiAgICBjb25zdCBvYmogPSBwYXJzZWQgYXMgUmVjb3JkPHN0cmluZywgdW5rbm93bj4KICAgIGlmICghb2JqLnNldHRpbmdzIHx8IHR5cGVvZiBvYmouc2V0dGluZ3MgIT09ICdvYmplY3QnIHx8IEFycmF5LmlzQXJyYXkob2JqLnNldHRpbmdzKSkgcmV0dXJuIHVuZGVmaW5lZAogICAgaWYgKG9iai50YXNrcyAhPT0gdW5kZWZpbmVkICYmICghb2JqLnRhc2tzIHx8IHR5cGVvZiBvYmoudGFza3MgIT09ICdvYmplY3QnIHx8IEFycmF5LmlzQXJyYXkob2JqLnRhc2tzKSkpIHsKICAgICAgcmV0dXJuIHVuZGVmaW5lZAogICAgfQogICAgY29uc3Qgc2V0dGluZ3NPYmogPSBvYmouc2V0dGluZ3MgYXMgUmVjb3JkPHN0cmluZywgdW5rbm93bj4KICAgIGlmIChzZXR0aW5nc09iai5maXJzdENoaWxkICE9PSB1bmRlZmluZWQgJiYgdHlwZW9mIHNldHRpbmdzT2JqLmZpcnN0Q2hpbGQgIT09ICdib29sZWFuJykgcmV0dXJuIHVuZGVmaW5lZAogICAgaWYgKHNldHRpbmdzT2JqLmR1ZURhdGUgIT09IHVuZGVmaW5lZCAmJiB0eXBlb2Ygc2V0dGluZ3NPYmouZHVlRGF0ZSAhPT0gJ3N0cmluZycpIHJldHVybiB1bmRlZmluZWQKICAgIGlmIChzZXR0aW5nc09iai5iaXJ0aERhdGUgIT09IHVuZGVmaW5lZCAmJiB0eXBlb2Ygc2V0dGluZ3NPYmouYmlydGhEYXRlICE9PSAnc3RyaW5nJykgcmV0dXJuIHVuZGVmaW5lZAoKICAgIGNvbnN0IHRhc2tzT2JqID0gKG9iai50YXNrcyA/PyB7fSkgYXMgUmVjb3JkPHN0cmluZywgdW5rbm93bj4KICAgIGZvciAoY29uc3QgdmFsIG9mIE9iamVjdC52YWx1ZXModGFza3NPYmopKSB7CiAgICAgIGlmICghdmFsIHx8IHR5cGVvZiB2YWwgIT09ICdvYmplY3QnIHx8IEFycmF5LmlzQXJyYXkodmFsKSkgcmV0dXJuIHVuZGVmaW5lZAogICAgICBjb25zdCBzdCA9ICh2YWwgYXMgUmVjb3JkPHN0cmluZywgdW5rbm93bj4pLnN0YXR1cwogICAgICBpZiAodHlwZW9mIHN0ICE9PSAnc3RyaW5nJyB8fCAhVkFMSURfU1RBVFVTRVMuaGFzKHN0KSkgcmV0dXJuIHVuZGVmaW5lZAogICAgfQoKICAgIGNvbnN0IGQgPSBwYXJzZWQgYXMgQXBwRGF0YQogICAgcmV0dXJuIHsKICAgICAgc2V0dGluZ3M6IHsgLi4uRU1QVFkuc2V0dGluZ3MsIC4uLmQuc2V0dGluZ3MsIGNvbmZpZ3VyZWQ6IHRydWUgfSwKICAgICAgdGFza3M6IGQudGFza3MgPz8ge30sCiAgICB9CiAgfSBjYXRjaCB7CiAgICByZXR1cm4gdW5kZWZpbmVkCiAgfQp9CgpleHBvcnQgZnVuY3Rpb24gZXhwb3J0QmFja3VwSnNvbihkOiBBcHBEYXRhLCBub3c6IERhdGUgPSBuZXcgRGF0ZSgpKTogc3RyaW5nIHsKICBjb25zdCB5ID0gbm93LmdldEZ1bGxZZWFyKCkKICBjb25zdCBtID0gU3RyaW5nKG5vdy5nZXRNb250aCgpICsgMSkucGFkU3RhcnQoMiwgJzAnKQogIGNvbnN0IGRheSA9IFN0cmluZyhub3cuZ2V0RGF0ZSgpKS5wYWRTdGFydCgyLCAnMCcpCiAgY29uc3QgZmlsZW5hbWUgPSBga2FtYWdheWEtYmFja3VwLSR7eX0ke219JHtkYXl9Lmpzb25gCiAgY29uc3QgYmxvYiA9IG5ldyBCbG9iKFtKU09OLnN0cmluZ2lmeShkLCBudWxsLCAyKV0sIHsgdHlwZTogJ2FwcGxpY2F0aW9uL2pzb247Y2hhcnNldD11dGYtOCcgfSkKICBjb25zdCB1cmwgPSBVUkwuY3JlYXRlT2JqZWN0VVJMKGJsb2IpCiAgY29uc3QgYSA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2EnKQogIGEuaHJlZiA9IHVybAogIGEuZG93bmxvYWQgPSBmaWxlbmFtZQogIGRvY3VtZW50LmJvZHkuYXBwZW5kQ2hpbGQoYSkKICBhLmNsaWNrKCkKICBhLnJlbW92ZSgpCiAgVVJMLnJldm9rZU9iamVjdFVSTCh1cmwpCiAgcmV0dXJuIGZpbGVuYW1lCn0KCg==
+import type { AppData } from '../types'
+
+const KEY = 'kamagaya-family-todo:v1'
+
+export const EMPTY: AppData = { settings: { firstChild: true }, tasks: {} }
+
+export function load(): AppData {
+  try {
+    const raw = localStorage.getItem(KEY)
+    if (!raw) return EMPTY
+    const d = JSON.parse(raw) as AppData
+    return { settings: { ...EMPTY.settings, ...d.settings }, tasks: d.tasks ?? {} }
+  } catch {
+    return EMPTY
+  }
+}
+
+export function save(d: AppData) {
+  localStorage.setItem(KEY, JSON.stringify(d))
+}
+
+// ───────── 夫婦間の共有（URLハッシュに状態を埋め込む） ─────────
+
+function toB64Url(s: string) {
+  const bytes = new TextEncoder().encode(s)
+  let bin = ''
+  bytes.forEach((b) => (bin += String.fromCharCode(b)))
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+function fromB64Url(s: string) {
+  const b64 = s.replace(/-/g, '+').replace(/_/g, '/')
+  const bin = atob(b64)
+  return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)))
+}
+
+export function shareUrl(d: AppData): string {
+  const url = new URL(location.href)
+  url.hash = `share=${toB64Url(JSON.stringify(d))}`
+  return url.toString()
+}
+
+export function readShared(): AppData | undefined {
+  const m = location.hash.match(/share=([^&]+)/)
+  if (!m) return undefined
+  try {
+    const d = JSON.parse(fromB64Url(m[1])) as AppData
+    return { settings: { ...EMPTY.settings, ...d.settings }, tasks: d.tasks ?? {} }
+  } catch {
+    return undefined
+  }
+}
+
+export function clearHash() {
+  history.replaceState(null, '', location.pathname + location.search)
+}
+
+// ───────── バックアップ（JSON書き出し・検証・読み込み） ─────────
+
+const VALID_STATUSES = new Set(['todo', 'scheduled', 'done', 'skip'])
+
+export function parseBackupJson(raw: string): AppData | undefined {
+  try {
+    const parsed: unknown = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return undefined
+    const obj = parsed as Record<string, unknown>
+    if (!obj.settings || typeof obj.settings !== 'object' || Array.isArray(obj.settings)) return undefined
+    if (obj.tasks !== undefined && (!obj.tasks || typeof obj.tasks !== 'object' || Array.isArray(obj.tasks))) {
+      return undefined
+    }
+    const settingsObj = obj.settings as Record<string, unknown>
+    if (settingsObj.firstChild !== undefined && typeof settingsObj.firstChild !== 'boolean') return undefined
+    if (settingsObj.dueDate !== undefined && typeof settingsObj.dueDate !== 'string') return undefined
+    if (settingsObj.birthDate !== undefined && typeof settingsObj.birthDate !== 'string') return undefined
+
+    const tasksObj = (obj.tasks ?? {}) as Record<string, unknown>
+    for (const val of Object.values(tasksObj)) {
+      if (!val || typeof val !== 'object' || Array.isArray(val)) return undefined
+      const st = (val as Record<string, unknown>).status
+      if (typeof st !== 'string' || !VALID_STATUSES.has(st)) return undefined
+    }
+
+    const d = parsed as AppData
+    return {
+      settings: { ...EMPTY.settings, ...d.settings, configured: true },
+      tasks: d.tasks ?? {},
+    }
+  } catch {
+    return undefined
+  }
+}
+
+export function exportBackupJson(d: AppData, now: Date = new Date()): string {
+  const y = now.getFullYear()
+  const m = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  const filename = `kamagaya-backup-${y}${m}${day}.json`
+  const blob = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+  return filename
+}
+
