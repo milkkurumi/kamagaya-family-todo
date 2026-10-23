@@ -1,10 +1,13 @@
-import { useState } from 'react'
-import type { Settings } from '../types'
+import { useRef, useState } from 'react'
+import type { AppData, Settings } from '../types'
 import { formatPhoneNumber } from '../lib/phone'
+import { exportBackupJson, parseBackupJson } from '../lib/storage'
 
 interface Props {
   settings: Settings
+  appData?: AppData
   onSave: (s: Settings) => void
+  onImportData?: (d: AppData) => void
   onClose?: () => void
   onReset?: () => void
   onToast?: (msg: string) => void
@@ -59,8 +62,18 @@ export function FriendShareSection({ onToast }: { onToast?: (msg: string) => voi
 
 type Stage = 'prep' | 'pregnancy' | 'born'
 
-export function SettingsPanel({ settings, onSave, onClose, onReset, onToast, initial }: Props) {
+export function SettingsPanel({
+  settings,
+  appData,
+  onSave,
+  onImportData,
+  onClose,
+  onReset,
+  onToast,
+  initial,
+}: Props) {
   const [s, setS] = useState<Settings>(settings)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [stage, setStage] = useState<Stage>(
     settings.birthDate ? 'born' : settings.dueDate ? 'pregnancy' : initial ? 'pregnancy' : 'prep',
   )
@@ -83,6 +96,35 @@ export function SettingsPanel({ settings, onSave, onClose, onReset, onToast, ini
     }
     if (stage === 'pregnancy') next.birthDate = undefined
     onSave(next)
+  }
+
+  const handleExportBackup = () => {
+    const currentData: AppData = {
+      settings: { ...s, configured: true },
+      tasks: appData?.tasks ?? {},
+    }
+    const filename = exportBackupJson(currentData)
+    onToast?.(`バックアップ（${filename}）を保存しました`)
+  }
+
+  const handleImportBackup = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    try {
+      const raw = await file.text()
+      const parsed = parseBackupJson(raw)
+      if (!parsed) {
+        onToast?.('バックアップファイルの形式が正しくありません。既存データは変更されていません')
+        return
+      }
+      if (confirm('現在のデータは上書きされます。よいですか？')) {
+        setS(parsed.settings)
+        onImportData?.(parsed)
+      }
+    } catch {
+      onToast?.('ファイルの読み込みに失敗しました。既存データは変更されていません')
+    }
   }
 
   return (
@@ -228,6 +270,27 @@ export function SettingsPanel({ settings, onSave, onClose, onReset, onToast, ini
       {stage === 'born' && !s.birthDate && (
         <p className="hint warn">※「出産後・育児中」ステージでは、お子さまの生年月日を入力すると保存ボタンが押せるようになります。</p>
       )}
+      <details open={!initial}>
+        <summary>データのバックアップ</summary>
+        <p className="hint">
+          機種変更やブラウザのデータ消去に備えて、現在の進捗・予定・設定をJSONファイルとして保存・復元できます。
+        </p>
+        <div className="actions" style={{ marginTop: '0.6rem' }}>
+          <button type="button" onClick={handleExportBackup}>
+            バックアップを保存
+          </button>
+          <button type="button" onClick={() => fileInputRef.current?.click()}>
+            バックアップから復元
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json,application/json"
+            style={{ display: 'none' }}
+            onChange={handleImportBackup}
+          />
+        </div>
+      </details>
 
       <div className="actions">
         <button
