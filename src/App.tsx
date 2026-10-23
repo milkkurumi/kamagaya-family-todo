@@ -11,6 +11,7 @@ import { NurseryList } from './components/NurseryList'
 import { Onboarding } from './components/Onboarding'
 import { MoneySimulation } from './components/MoneySimulation'
 import { formatPhoneNumber } from './lib/phone'
+import { LAST_VERIFIED_AT } from './lib/site'
 
 type Tab = 'now' | 'timeline' | 'scheduled' | 'nursery' | 'money'
 
@@ -600,7 +601,7 @@ export default function App() {
       <footer>
         <FriendShareSection onToast={setToast} />
         <p>
-          掲載情報は鎌ケ谷市公式ホームページおよび鎌ケ谷市子育て応援サイト「かまっこ応援団」の公開情報をもとに構成しています。制度の最新要件は各タスクの参照元リンクからご確認ください。
+          掲載情報は鎌ケ谷市公式ホームページおよび鎌ケ谷市子育て応援サイト「かまっこ応援団」の公開情報をもとに構成しています（最終確認：{LAST_VERIFIED_AT}時点）。制度の最新要件は各タスクの参照元リンクからご確認ください。
         </p>
         <p>
           Amazonのアソシエイトとして、かまがや親子カレンダーは適格販売により収入を得ています。タスク詳細内の「関連アイテム」はアフィリエイト広告を含みます。
