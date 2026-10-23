@@ -606,6 +606,31 @@ export default function App() {
           Amazonのアソシエイトとして、かまがや親子カレンダーは適格販売により収入を得ています。タスク詳細内の「関連アイテム」はアフィリエイト広告を含みます。
         </p>
       </footer>
+
+      <nav className="bottom-tabs" aria-label="モバイル下部メニュー">
+        {(
+          [
+            ['now', 'いまやる', 'tab-now'],
+            ['timeline', '全期間', 'tab-timeline'],
+            ['scheduled', `予定（${upcomingScheduled.length}）`, 'tab-scheduled'],
+            ['nursery', '保活', 'tab-nursery'],
+            ['money', 'お金', 'tab-money'],
+          ] as const
+        ).map(([k, label, iconId]) => (
+          <button
+            key={k}
+            type="button"
+            className={tab === k ? 'on' : ''}
+            aria-current={tab === k ? 'page' : undefined}
+            onClick={() => setTab(k)}
+          >
+            <svg className="bottom-tab-icon" viewBox="0 0 20 20" aria-hidden="true">
+              <use href={`/icons.svg#${iconId}`} />
+            </svg>
+            <span className="bottom-tab-label">{label}</span>
+          </button>
+        ))}
+      </nav>
       {toast && <div className="toast">{toast}</div>}
     </div>
   )
