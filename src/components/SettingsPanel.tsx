@@ -112,22 +112,28 @@ export function SettingsPanel({ settings, onSave, onClose, onReset, onToast, ini
       <div className="form-grid">
         {stage !== 'prep' && (
           <label>
-            出産予定日
+            出産予定日{stage === 'pregnancy' ? '（必須）' : '（任意）'}
             <input
               type="date"
               value={s.dueDate ?? ''}
               onChange={(e) => set({ dueDate: e.target.value || undefined })}
             />
+            <span className="field-note">
+              タップしてカレンダーから選べます。この日を基準に手続きの推奨時期を自動計算します。
+            </span>
           </label>
         )}
         {stage === 'born' && (
           <label>
-            お子さまの生年月日
+            お子さまの生年月日（必須）
             <input
               type="date"
               value={s.birthDate ?? ''}
               onChange={(e) => set({ birthDate: e.target.value || undefined })}
             />
+            <span className="field-note">
+              タップしてカレンダーから選べます。生年月日を基準に健診・予防接種・保活の時期を自動計算します。
+            </span>
           </label>
         )}
         {stage === 'born' && (
@@ -215,6 +221,13 @@ export function SettingsPanel({ settings, onSave, onClose, onReset, onToast, ini
           </label>
         </div>
       </details>
+
+      {stage === 'pregnancy' && !s.dueDate && (
+        <p className="hint warn">※「妊娠中」ステージでは、出産予定日を入力すると保存ボタンが押せるようになります。</p>
+      )}
+      {stage === 'born' && !s.birthDate && (
+        <p className="hint warn">※「出産後・育児中」ステージでは、お子さまの生年月日を入力すると保存ボタンが押せるようになります。</p>
+      )}
 
       <div className="actions">
         <button
