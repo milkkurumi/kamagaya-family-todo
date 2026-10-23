@@ -214,7 +214,10 @@ export default function App() {
           settings={settings}
           appData={data}
           initial={!configured}
-          onSave={saveSettings}
+          onSave={(s) => {
+            saveSettings(s)
+            setToast('設定を保存しました')
+          }}
           onImportData={(restored) => {
             setData(restored)
             setShowSettings(false)

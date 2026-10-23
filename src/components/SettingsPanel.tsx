@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import type { AppData, Settings } from '../types'
 import { formatPhoneNumber } from '../lib/phone'
+import { jp, parseDate } from '../lib/date'
 import { exportBackupJson, parseBackupJson } from '../lib/storage'
 
 interface Props {
@@ -74,6 +75,9 @@ export function SettingsPanel({
 }: Props) {
   const [s, setS] = useState<Settings>(settings)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const dueRef = useRef<HTMLInputElement>(null)
+  const birthRef = useRef<HTMLInputElement>(null)
+  const [error, setError] = useState('')
   const [stage, setStage] = useState<Stage>(
     settings.birthDate ? 'born' : settings.dueDate ? 'pregnancy' : initial ? 'pregnancy' : 'prep',
   )
@@ -81,6 +85,31 @@ export function SettingsPanel({
   const set = (patch: Partial<Settings>) => setS({ ...s, ...patch })
 
   const submit = () => {
+    if (stage === 'pregnancy' && !s.dueDate) {
+      setError('出産予定日がまだ入力されていません。日付欄をタップして、カレンダーで日付を選んでから「OK」を押してください。')
+      const el = dueRef.current
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      try {
+        el?.focus()
+        el?.showPicker?.()
+      } catch {
+        /* showPicker非対応環境ではスクロールのみ */
+      }
+      return
+    }
+    if (stage === 'born' && !s.birthDate) {
+      setError('お子さまの生年月日がまだ入力されていません。日付欄をタップして、カレンダーで日付を選んでから「OK」を押してください。')
+      const el = birthRef.current
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      try {
+        el?.focus()
+        el?.showPicker?.()
+      } catch {
+        /* showPicker非対応環境ではスクロールのみ */
+      }
+      return
+    }
+    setError('')
     const next: Settings = {
       ...s,
       emergencyContacts: s.emergencyContacts
@@ -156,26 +185,40 @@ export function SettingsPanel({
           <label>
             出産予定日{stage === 'pregnancy' ? '（必須）' : '（任意）'}
             <input
+              ref={dueRef}
               type="date"
               value={s.dueDate ?? ''}
-              onChange={(e) => set({ dueDate: e.target.value || undefined })}
+              onChange={(e) => {
+                set({ dueDate: e.target.value || undefined })
+                if (e.target.value) setError('')
+              }}
             />
             <span className="field-note">
               タップしてカレンダーから選べます。この日を基準に手続きの推奨時期を自動計算します。
             </span>
+            {s.dueDate && parseDate(s.dueDate) && (
+              <span className="field-note">✓ 選択中：{jp(parseDate(s.dueDate)!, true)}</span>
+            )}
           </label>
         )}
         {stage === 'born' && (
           <label>
             お子さまの生年月日（必須）
             <input
+              ref={birthRef}
               type="date"
               value={s.birthDate ?? ''}
-              onChange={(e) => set({ birthDate: e.target.value || undefined })}
+              onChange={(e) => {
+                set({ birthDate: e.target.value || undefined })
+                if (e.target.value) setError('')
+              }}
             />
             <span className="field-note">
               タップしてカレンダーから選べます。生年月日を基準に健診・予防接種・保活の時期を自動計算します。
             </span>
+            {s.birthDate && parseDate(s.birthDate) && (
+              <span className="field-note">✓ 選択中：{jp(parseDate(s.birthDate)!, true)}</span>
+            )}
           </label>
         )}
         {stage === 'born' && (
@@ -292,13 +335,13 @@ export function SettingsPanel({
         </div>
       </details>
 
+      {error && (
+        <p className="hint warn" role="alert">
+          ※{error}
+        </p>
+      )}
       <div className="actions">
-        <button
-          type="button"
-          className="primary"
-          onClick={submit}
-          disabled={(stage === 'pregnancy' && !s.dueDate) || (stage === 'born' && !s.birthDate)}
-        >
+        <button type="button" className="primary" onClick={submit}>
           {initial ? '設定を保存してはじめる' : '設定を保存'}
         </button>
         {onClose && (

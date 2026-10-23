@@ -2260,11 +2260,7 @@ footer .share-friend-box {
     align-items: flex-start;
   }
   .tabs {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-  }
-  .tabs button {
-    font-size: 0.74rem;
-    padding: 0.48rem 0.15rem;
+    display: none;
   }
   .bottom-tabs {
     display: grid;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Assignee, Settings, TaskState } from '../types'
 import { fmt, isWeekend, jp, parseDate, quickDates, suggestedDate } from '../lib/date'
 import { buildIcs, downloadIcs, googleCalendarUrl } from '../lib/calendar'
@@ -31,6 +31,7 @@ export function MeetingMode({
 }: Props) {
   const [queueIds] = useState<string[]>(() => candidates.map((c) => c.task.id))
   const [idx, setIdx] = useState(0)
+  const boxRef = useRef<HTMLElement | null>(null)
   const [decidedIds, setDecidedIds] = useState<string[]>([])
   const [savedBanner, setSavedBanner] = useState(false)
 
@@ -117,13 +118,20 @@ export function MeetingMode({
   const { task, state, window: w, timing, daysLeft } = currentView
   const draft: TaskState = { ...state, date, time, assignee, status: 'scheduled' }
 
+  const advance = () => {
+    setIdx((i) => i + 1)
+    requestAnimationFrame(() => {
+      boxRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+  }
+
   const saveDecision = () => {
     if (!date) return
     onChange(task.id, { date, time, assignee, status: 'scheduled' })
     if (!decidedIds.includes(task.id)) {
       setDecidedIds((prev) => [...prev, task.id])
     }
-    setSavedBanner(true)
+    advance()
   }
 
   const handleGoogleCalendar = () => {
@@ -148,15 +156,15 @@ export function MeetingMode({
 
   const handleSkipTask = () => {
     onChange(task.id, { status: 'skip' })
-    setIdx((i) => i + 1)
+    advance()
   }
 
   const handleNext = () => {
-    setIdx((i) => i + 1)
+    advance()
   }
 
   return (
-    <section className="meeting-box">
+    <section className="meeting-box" ref={boxRef}>
       <div className="meeting-head">
         <div>
           <span className="status-kicker">
