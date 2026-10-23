@@ -7,12 +7,59 @@ interface Props {
   onSave: (s: Settings) => void
   onClose?: () => void
   onReset?: () => void
+  onToast?: (msg: string) => void
   initial?: boolean
+}
+
+export const APP_PUBLIC_URL = 'https://kamagaya-family-todo.vercel.app/'
+export const APP_SHARE_TEXT = '鎌ケ谷市の妊娠・出産・保活の手続きを夫婦で分担できる『かまがや親子カレンダー』'
+export const LINE_SHARE_URL = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(APP_PUBLIC_URL)}&text=${encodeURIComponent(APP_SHARE_TEXT)}`
+export const X_SHARE_URL = `https://twitter.com/intent/tweet?text=${encodeURIComponent(APP_SHARE_TEXT)}&url=${encodeURIComponent(APP_PUBLIC_URL)}`
+
+export function FriendShareSection({ onToast }: { onToast?: (msg: string) => void }) {
+  const copyAppUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(APP_PUBLIC_URL)
+      onToast?.('URLをコピーしました')
+    } catch {
+      prompt('このアプリのURLをコピーしてください', APP_PUBLIC_URL)
+    }
+  }
+
+  return (
+    <div className="share-friend-box">
+      <div className="subhead">このアプリを友達に教える</div>
+      <p className="hint">
+        鎌ケ谷市で出産・子育てを予定しているご友人やご家族へ、このアプリを紹介できます。パートナーへのデータ引き継ぎ用の「共有リンク」とは異なり、入力した予定や個人データは一切含まれない素のアプリURLのみを共有します。
+      </p>
+      <div className="actions share-friend-actions">
+        <a
+          href={LINE_SHARE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-link-outline btn-line"
+        >
+          LINEで送る
+        </a>
+        <a
+          href={X_SHARE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-link-outline"
+        >
+          Xでポストする
+        </a>
+        <button type="button" onClick={copyAppUrl}>
+          URLをコピーする
+        </button>
+      </div>
+    </div>
+  )
 }
 
 type Stage = 'prep' | 'pregnancy' | 'born'
 
-export function SettingsPanel({ settings, onSave, onClose, onReset, initial }: Props) {
+export function SettingsPanel({ settings, onSave, onClose, onReset, onToast, initial }: Props) {
   const [s, setS] = useState<Settings>(settings)
   const [stage, setStage] = useState<Stage>(
     settings.birthDate ? 'born' : settings.dueDate ? 'pregnancy' : initial ? 'pregnancy' : 'prep',
@@ -189,6 +236,8 @@ export function SettingsPanel({ settings, onSave, onClose, onReset, initial }: P
           </button>
         )}
       </div>
+
+      <FriendShareSection onToast={onToast} />
     </section>
   )
 }

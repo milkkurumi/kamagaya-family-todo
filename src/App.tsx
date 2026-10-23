@@ -6,7 +6,7 @@ import { ageText, jp, parseDate, pregnancyWeek, today } from './lib/date'
 import { PHASE, PRIORITY, ROLE, TIMING_LABEL, buildViews, sortViews, type Timing, type TaskView } from './lib/view'
 import { buildIcs, downloadIcs } from './lib/calendar'
 import { TaskCard } from './components/TaskCard'
-import { SettingsPanel } from './components/SettingsPanel'
+import { SettingsPanel, FriendShareSection } from './components/SettingsPanel'
 import { NurseryList } from './components/NurseryList'
 import { Onboarding } from './components/Onboarding'
 import { MoneySimulation } from './components/MoneySimulation'
@@ -212,6 +212,7 @@ export default function App() {
           initial={!configured}
           onSave={saveSettings}
           onClose={configured ? () => setShowSettings(false) : undefined}
+          onToast={setToast}
           onReset={
             configured
               ? () => {
@@ -223,6 +224,7 @@ export default function App() {
               : undefined
           }
         />
+        {toast && <div className="toast">{toast}</div>}
       </div>
     )
   }
@@ -596,6 +598,7 @@ export default function App() {
       </main>
 
       <footer>
+        <FriendShareSection onToast={setToast} />
         <p>
           掲載情報は鎌ケ谷市公式ホームページおよび鎌ケ谷市子育て応援サイト「かまっこ応援団」の公開情報をもとに構成しています。制度の最新要件は各タスクの参照元リンクからご確認ください。
         </p>
