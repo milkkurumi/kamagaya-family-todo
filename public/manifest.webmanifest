@@ -1,0 +1,30 @@
+{
+  "name": "かまがや親子カレンダー",
+  "short_name": "親子カレンダー",
+  "description": "鎌ケ谷市の妊活〜就学前の手続き・健診・助成を、夫婦で分担してGoogleカレンダーに登録できるタスク管理ツール",
+  "lang": "ja",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#265343",
+  "background_color": "#f6f5f1",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
