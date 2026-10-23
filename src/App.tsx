@@ -335,7 +335,7 @@ export default function App() {
         </div>
         <div className="kpis">
           <div className="kpi-box">
-            <span className="kpi-label">必須・日程未定</span>
+            <span className="kpi-label">日程が未定の必須手続き</span>
             <strong className={mustOpen ? 'red' : ''}>{mustOpen}件</strong>
           </div>
           <div className="kpi-box">
