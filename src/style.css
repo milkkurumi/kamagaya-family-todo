@@ -1217,14 +1217,18 @@ label.small {
   flex: 1 1 240px;
 }
 
-.btn-line {
+.btn-line,
+.btn-link-outline.btn-line {
   background: #1f7a4c;
   border-color: #1f7a4c;
   color: #ffffff;
 }
 
-.btn-line:hover:not(:disabled) {
+.btn-line:hover:not(:disabled),
+.btn-link-outline.btn-line:hover {
   background: #175e3a;
+  border-color: #175e3a;
+  color: #ffffff;
 }
 
 .filter-group {
@@ -1945,6 +1949,27 @@ footer {
 
 footer p {
   margin: 0.3rem 0;
+}
+
+.share-friend-box {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 0.4rem;
+}
+
+.share-friend-box .subhead {
+  margin-bottom: 0;
+}
+
+footer .share-friend-box {
+  background: var(--surface);
+  margin-top: 0;
+  margin-bottom: 1rem;
 }
 
 .toast {
