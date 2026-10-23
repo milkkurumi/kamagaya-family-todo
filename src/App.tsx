@@ -248,6 +248,26 @@ export default function App() {
     (v) => v.task.priority === 'must' && (v.timing === 'now' || v.timing === 'overdue') && v.state.status === 'todo',
   ).length
   const doneCount = views.filter((v) => v.state.status === 'done').length
+  const donePercent = views.length > 0 ? Math.round((doneCount / views.length) * 100) : 0
+
+  const nextMustTask = views
+    .filter((v) => v.task.priority === 'must' && v.state.status === 'todo')
+    .filter((v) => (due || birth ? Boolean(v.window.end || v.window.start) : v.task.phase === 'prep'))
+    .sort((a, b) => {
+      const ae = a.window.end?.getTime() ?? a.window.start?.getTime() ?? Number.MAX_SAFE_INTEGER
+      const be = b.window.end?.getTime() ?? b.window.start?.getTime() ?? Number.MAX_SAFE_INTEGER
+      return ae - be
+    })[0]
+
+  const nextMustDeadline = nextMustTask
+    ? nextMustTask.timing === 'overdue'
+      ? '推奨期間超過・要確認'
+      : nextMustTask.daysLeft !== undefined && nextMustTask.window.end
+        ? `あと${nextMustTask.daysLeft}日（〜${jp(nextMustTask.window.end)}）`
+        : nextMustTask.window.start && nextMustTask.window.end
+          ? `${jp(nextMustTask.window.start)}〜${jp(nextMustTask.window.end)}`
+          : (nextMustTask.task.deadlineLabel ?? '')
+    : ''
 
   return (
     <div className="app">
@@ -330,24 +350,70 @@ export default function App() {
       )}
 
       <section className="status-bar">
-        <div className="status-main">
-          <span className="status-kicker">現在のステータス</span>
-          <div className="stage-text">{stageText}</div>
+        <div className="status-top-row">
+          <div className="status-main">
+            <span className="status-kicker">現在のステータス</span>
+            <div className="stage-text">{stageText}</div>
+          </div>
+          <div className="kpis">
+            <div className="kpi-box">
+              <span className="kpi-label">日程が未定の必須手続き</span>
+              <strong className={mustOpen ? 'red' : ''}>{mustOpen}件</strong>
+            </div>
+            <div className="kpi-box">
+              <span className="kpi-label">今後の予定</span>
+              <strong>{upcomingScheduled.length}件</strong>
+            </div>
+            <div className="kpi-box">
+              <span className="kpi-label">完了済</span>
+              <strong>
+                {doneCount}/{views.length} <span className="kpi-pct">({donePercent}%)</span>
+              </strong>
+            </div>
+          </div>
         </div>
-        <div className="kpis">
-          <div className="kpi-box">
-            <span className="kpi-label">日程が未定の必須手続き</span>
-            <strong className={mustOpen ? 'red' : ''}>{mustOpen}件</strong>
+
+        <div className="status-sub-row">
+          <div className="status-progress-wrap">
+            <div className="status-progress-head">
+              <span>全体の完了率</span>
+              <strong>{donePercent}%</strong>
+            </div>
+            <div
+              className="status-progress-track"
+              role="progressbar"
+              aria-valuenow={donePercent}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="タスク完了率"
+            >
+              <div className="status-progress-fill" style={{ width: `${donePercent}%` }} />
+            </div>
           </div>
-          <div className="kpi-box">
-            <span className="kpi-label">今後の予定</span>
-            <strong>{upcomingScheduled.length}件</strong>
-          </div>
-          <div className="kpi-box">
-            <span className="kpi-label">完了済</span>
-            <strong>
-              {doneCount}/{views.length}
-            </strong>
+
+          <div className="status-next-must">
+            <span className="next-must-label">次にやる必須タスク</span>
+            {nextMustTask ? (
+              <div className="next-must-body">
+                <div className="next-must-info">
+                  <strong className="next-must-title">{nextMustTask.task.title}</strong>
+                  {nextMustDeadline && (
+                    <span className={`next-must-deadline ${nextMustTask.timing === 'overdue' ? 'urgent' : ''}`}>
+                      {nextMustDeadline}
+                    </span>
+                  )}
+                </div>
+                <button type="button" className="small-btn" onClick={() => jumpToTask(nextMustTask.task.id)}>
+                  開く →
+                </button>
+              </div>
+            ) : !due && !birth ? (
+              <div className="next-must-empty">
+                出産予定日または生年月日を「設定」から登録すると、期限が近い必須タスクが表示されます
+              </div>
+            ) : (
+              <div className="next-must-empty done">必須タスクはすべて日程決定・完了済みです</div>
+            )}
           </div>
         </div>
       </section>
