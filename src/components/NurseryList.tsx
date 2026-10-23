@@ -509,7 +509,16 @@ export function NurseryList({ settings, onUpdateSettings }: NurseryListProps) {
       </div>
 
       {filtered.length === 0 && (
-        <p className="empty">条件に一致する施設がありません。フィルタや検索語句を変更してください。</p>
+        <div className="empty">
+          <p>条件に一致する施設がありません。エリア・種別・園の条件フィルタや検索語句を変更してみてください。</p>
+          {hasNurseryFilter && (
+            <div className="empty-actions">
+              <button type="button" onClick={clearNurseryFilters}>
+                絞り込みをすべて解除する
+              </button>
+            </div>
+          )}
+        </div>
       )}
 
       <div className="nursery-list">

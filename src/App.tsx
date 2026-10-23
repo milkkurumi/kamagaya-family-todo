@@ -530,12 +530,16 @@ export default function App() {
         {tab === 'now' && (
           <NowList
             views={filtered}
+            allViews={views}
             settings={settings}
             onChange={updateTask}
             onDeleteCustom={deleteCustomTask}
             prep={!due && !birth}
             focusId={focusId}
             onBulkDone={bulkDone}
+            hasFilter={hasTaskFilter}
+            onClearFilters={clearTaskFilters}
+            onOpenTimeline={() => setTab('timeline')}
           />
         )}
         {tab === 'timeline' && (
@@ -545,6 +549,8 @@ export default function App() {
             onChange={updateTask}
             onDeleteCustom={deleteCustomTask}
             focusId={focusId}
+            hasFilter={hasTaskFilter}
+            onClearFilters={clearTaskFilters}
           />
         )}
         {tab === 'scheduled' && (
@@ -632,24 +638,62 @@ interface ListProps {
   onChange: (id: string, patch: Partial<TaskState>) => void
   onDeleteCustom: (id: string) => void
   focusId?: string
+  hasFilter?: boolean
+  onClearFilters?: () => void
 }
 
 function NowList({
   views,
+  allViews,
   settings,
   onChange,
   onDeleteCustom,
   prep,
   focusId,
   onBulkDone,
-}: ListProps & { prep: boolean; onBulkDone: (ids: string[]) => void }) {
+  hasFilter,
+  onClearFilters,
+  onOpenTimeline,
+}: ListProps & {
+  allViews: TaskView[]
+  prep: boolean
+  onBulkDone: (ids: string[]) => void
+  onOpenTimeline: () => void
+}) {
   const groups: Timing[] = prep ? ['anytime'] : ['overdue', 'now', 'soon']
   const list = views.filter((v) => (prep ? v.task.phase === 'prep' : groups.includes(v.timing)))
   if (!list.length) {
+    if (hasFilter) {
+      return (
+        <div className="empty">
+          <p>現在の絞り込み条件に一致するタスクがありません。条件を変更するかフィルターを解除してください。</p>
+          {onClearFilters && (
+            <div className="empty-actions">
+              <button type="button" onClick={onClearFilters}>
+                絞り込みをすべて解除する
+              </button>
+            </div>
+          )}
+        </div>
+      )
+    }
+    const nextLater = allViews
+      .filter((v) => v.timing === 'later' && v.state.status === 'todo' && v.window.start)
+      .sort(sortViews)[0]
     return (
-      <p className="empty">
-        直近で対応が必要なタスクはありません。「全期間一覧」タブから先のスケジュールを確認できます。
-      </p>
+      <div className="empty">
+        <p>
+          いま期限が近い手続きはありません。
+          {nextLater
+            ? `次は ${jp(nextLater.window.start!)} 頃から「${nextLater.task.title}」が始まります。`
+            : '直近の手続きはすべて順調に片付いています。'}
+        </p>
+        <div className="empty-actions">
+          <button type="button" onClick={onOpenTimeline}>
+            「全期間一覧」で先のスケジュールを見る
+          </button>
+        </div>
+      </div>
     )
   }
   return (
@@ -699,7 +743,21 @@ function NowList({
   )
 }
 
-function Timeline({ views, settings, onChange, onDeleteCustom, focusId }: ListProps) {
+function Timeline({ views, settings, onChange, onDeleteCustom, focusId, hasFilter, onClearFilters }: ListProps) {
+  if (!views.length) {
+    return (
+      <div className="empty">
+        <p>条件に一致するタスクがありません。検索語句やフィルターを変更してください。</p>
+        {hasFilter && onClearFilters && (
+          <div className="empty-actions">
+            <button type="button" onClick={onClearFilters}>
+              絞り込みをすべて解除する
+            </button>
+          </div>
+        )}
+      </div>
+    )
+  }
   return (
     <>
       {(Object.keys(PHASE) as Phase[]).map((p) => {
