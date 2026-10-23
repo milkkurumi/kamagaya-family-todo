@@ -2102,10 +2102,17 @@ footer .share-friend-box {
   z-index: 50;
 }
 
+.bottom-tabs {
+  display: none;
+}
+
 @media (max-width: 640px) {
   .status-sub-row {
     grid-template-columns: 1fr;
     gap: 0.55rem;
+  }
+  .app {
+    padding-bottom: calc(5.2rem + env(safe-area-inset-bottom, 0px));
   }
   .header {
     flex-direction: column;
@@ -2117,6 +2124,50 @@ footer .share-friend-box {
   .tabs button {
     font-size: 0.74rem;
     padding: 0.48rem 0.15rem;
+  }
+  .bottom-tabs {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--line-strong);
+    padding: 0.25rem 0.25rem calc(0.25rem + env(safe-area-inset-bottom, 0px));
+    z-index: 40;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.06);
+  }
+  .bottom-tabs button {
+    border: none;
+    background: transparent;
+    padding: 0.32rem 0.1rem;
+    border-radius: var(--radius-sm);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+    color: var(--sub);
+    font-size: 0.68rem;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  .bottom-tabs button.on {
+    color: var(--primary);
+    background: var(--primary-soft);
+    font-weight: 700;
+  }
+  .bottom-tab-icon {
+    width: 19px;
+    height: 19px;
+    display: block;
+  }
+  .bottom-tab-label {
+    white-space: nowrap;
+  }
+  .toast {
+    bottom: calc(4.8rem + env(safe-area-inset-bottom, 0px));
   }
   .scheduler .row {
     grid-template-columns: 1fr 1fr;
