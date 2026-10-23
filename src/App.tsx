@@ -10,6 +10,7 @@ import { SettingsPanel, FriendShareSection } from './components/SettingsPanel'
 import { NurseryList } from './components/NurseryList'
 import { Onboarding } from './components/Onboarding'
 import { MoneySimulation } from './components/MoneySimulation'
+import { MeetingMode } from './components/MeetingMode'
 import { formatPhoneNumber } from './lib/phone'
 import { LAST_VERIFIED_AT } from './lib/site'
 
@@ -22,6 +23,7 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false)
   const [showEmergency, setShowEmergency] = useState(false)
   const [showAddTask, setShowAddTask] = useState(false)
+  const [showMeeting, setShowMeeting] = useState(false)
   const [taskQuery, setTaskQuery] = useState('')
   const [showOnboarding, setShowOnboarding] = useState(() => {
     const s = data.settings
@@ -274,6 +276,19 @@ export default function App() {
           ? `${jp(nextMustTask.window.start)}〜${jp(nextMustTask.window.end)}`
           : (nextMustTask.task.deadlineLabel ?? '')
     : ''
+
+  const meetingCandidates = useMemo(() => {
+    const targetTimings: Timing[] = ['overdue', 'now', 'soon']
+    return views
+      .filter((v) => v.state.status === 'todo' && !v.state.date && targetTimings.includes(v.timing))
+      .sort((a, b) => {
+        const po = PRIORITY[a.task.priority].order - PRIORITY[b.task.priority].order
+        if (po !== 0) return po
+        const ae = a.window.end?.getTime() ?? a.window.start?.getTime() ?? Number.MAX_SAFE_INTEGER
+        const be = b.window.end?.getTime() ?? b.window.start?.getTime() ?? Number.MAX_SAFE_INTEGER
+        return ae - be
+      })
+  }, [views])
 
   return (
     <div className="app">
@@ -601,19 +616,47 @@ export default function App() {
 
       <main>
         {tab === 'now' && (
-          <NowList
-            views={filtered}
-            allViews={views}
-            settings={settings}
-            onChange={updateTask}
-            onDeleteCustom={deleteCustomTask}
-            prep={!due && !birth}
-            focusId={focusId}
-            onBulkDone={bulkDone}
-            hasFilter={hasTaskFilter}
-            onClearFilters={clearTaskFilters}
-            onOpenTimeline={() => setTab('timeline')}
-          />
+          <>
+            {showMeeting ? (
+              <MeetingMode
+                candidates={meetingCandidates}
+                allViews={views}
+                settings={settings}
+                prep={!due && !birth}
+                onChange={updateTask}
+                onClose={() => setShowMeeting(false)}
+                onOpenSettings={() => {
+                  setShowMeeting(false)
+                  setShowSettings(true)
+                }}
+              />
+            ) : (
+              <div className="meeting-launch-bar">
+                <div className="meeting-launch-text">
+                  <strong>週末の夫婦会議モード</strong>
+                  <span>
+                    直近で日程が未定の手続き（{meetingCandidates.length}件）を、優先度順に1件ずつ確認して担当と実施日を決められます。
+                  </span>
+                </div>
+                <button type="button" className="primary" onClick={() => setShowMeeting(true)}>
+                  夫婦会議をはじめる{meetingCandidates.length > 0 ? `（${meetingCandidates.length}件）` : ''}
+                </button>
+              </div>
+            )}
+            <NowList
+              views={filtered}
+              allViews={views}
+              settings={settings}
+              onChange={updateTask}
+              onDeleteCustom={deleteCustomTask}
+              prep={!due && !birth}
+              focusId={focusId}
+              onBulkDone={bulkDone}
+              hasFilter={hasTaskFilter}
+              onClearFilters={clearTaskFilters}
+              onOpenTimeline={() => setTab('timeline')}
+            />
+          </>
         )}
         {tab === 'timeline' && (
           <Timeline
