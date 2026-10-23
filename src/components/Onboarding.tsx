@@ -1,3 +1,5 @@
+import { NURSERIES } from '../data/nurseries'
+
 interface Props {
   onComplete: () => void
 }
@@ -17,7 +19,7 @@ export function Onboarding({ onComplete }: Props) {
     {
       num: '03',
       title: 'パパ単独で動ける手続き・保活・助成金を一元管理',
-      desc: '窓口の委任状条件や同時手続きのコツ、市内28園のエリア別比較、もらい損ね防止トラッカー（医療費控除試算つき）をひとつの画面で確認できます。',
+      desc: `窓口の委任状条件や同時手続きのコツ、市内${NURSERIES.length}施設のエリア別比較、もらい損ね防止トラッカー（医療費控除試算つき）をひとつの画面で確認できます。`,
     },
     {
       num: '04',

@@ -98,7 +98,7 @@ export function MoneySimulation({ settings, onUpdateSettings, views, onJump }: P
       </p>
 
       <div className="panel-box">
-        <div className="subhead">1. もらい損ね防止トラッカー（全6項目）</div>
+        <div className="subhead">1. もらい損ね防止トラッカー（全{trackerRows.length}項目）</div>
         <div className="tracker-list">
           {trackerRows.map((r) => {
             const v = views.find((x) => x.task.id === r.taskId)
