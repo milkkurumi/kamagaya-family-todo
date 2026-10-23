@@ -333,10 +333,125 @@ label.small {
   padding: 0.85rem 1.1rem;
   margin-bottom: 0.9rem;
   display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.status-top-row {
+  display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
   flex-wrap: wrap;
+}
+
+.status-sub-row {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 0.75rem;
+  align-items: center;
+  padding-top: 0.65rem;
+  border-top: 1px dashed var(--line);
+}
+
+.status-progress-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+
+.status-progress-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.74rem;
+  color: var(--sub);
+}
+
+.status-progress-head strong {
+  font-size: 0.82rem;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.status-progress-track {
+  width: 100%;
+  height: 7px;
+  background: var(--surface-sub);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.status-progress-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 999px;
+  transition: width 0.25s ease;
+}
+
+.status-next-must {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0.42rem 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.next-must-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--must);
+  letter-spacing: 0.02em;
+}
+
+.next-must-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.next-must-info {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.next-must-title {
+  font-size: 0.84rem;
+  color: var(--ink);
+}
+
+.next-must-deadline {
+  font-size: 0.75rem;
+  color: var(--sub);
+}
+
+.next-must-deadline.urgent {
+  color: var(--must);
+  font-weight: 700;
+}
+
+.next-must-empty {
+  font-size: 0.78rem;
+  color: var(--sub);
+}
+
+.next-must-empty.done {
+  color: var(--opt);
+  font-weight: 600;
+}
+
+.kpi-pct {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--sub);
 }
 
 .status-kicker {
@@ -1992,6 +2107,10 @@ footer .share-friend-box {
 }
 
 @media (max-width: 640px) {
+  .status-sub-row {
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+  }
   .app {
     padding-bottom: calc(5.2rem + env(safe-area-inset-bottom, 0px));
   }
