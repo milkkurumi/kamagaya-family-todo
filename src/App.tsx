@@ -210,8 +210,14 @@ export default function App() {
         <Header />
         <SettingsPanel
           settings={settings}
+          appData={data}
           initial={!configured}
           onSave={saveSettings}
+          onImportData={(restored) => {
+            setData(restored)
+            setShowSettings(false)
+            setToast('バックアップからデータを復元しました')
+          }}
           onClose={configured ? () => setShowSettings(false) : undefined}
           onToast={setToast}
           onReset={
