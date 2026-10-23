@@ -197,6 +197,23 @@ export default function App() {
     )
   }
 
+  // NOTE: Hooks must run before any early return. The settings gate below
+  // returns early, so this useMemo has to stay above it — moving it below
+  // the gate crashes the app ("Rendered more hooks than during the
+  // previous render") when the view switches between settings and main.
+  const meetingCandidates = useMemo(() => {
+    const targetTimings: Timing[] = ['overdue', 'now', 'soon']
+    return views
+      .filter((v) => v.state.status === 'todo' && !v.state.date && targetTimings.includes(v.timing))
+      .sort((a, b) => {
+        const po = PRIORITY[a.task.priority].order - PRIORITY[b.task.priority].order
+        if (po !== 0) return po
+        const ae = a.window.end?.getTime() ?? a.window.start?.getTime() ?? Number.MAX_SAFE_INTEGER
+        const be = b.window.end?.getTime() ?? b.window.start?.getTime() ?? Number.MAX_SAFE_INTEGER
+        return ae - be
+      })
+  }, [views])
+
   if (!configured || showSettings) {
     if (showOnboarding) {
       return (
@@ -279,19 +296,6 @@ export default function App() {
           ? `${jp(nextMustTask.window.start)}〜${jp(nextMustTask.window.end)}`
           : (nextMustTask.task.deadlineLabel ?? '')
     : ''
-
-  const meetingCandidates = useMemo(() => {
-    const targetTimings: Timing[] = ['overdue', 'now', 'soon']
-    return views
-      .filter((v) => v.state.status === 'todo' && !v.state.date && targetTimings.includes(v.timing))
-      .sort((a, b) => {
-        const po = PRIORITY[a.task.priority].order - PRIORITY[b.task.priority].order
-        if (po !== 0) return po
-        const ae = a.window.end?.getTime() ?? a.window.start?.getTime() ?? Number.MAX_SAFE_INTEGER
-        const be = b.window.end?.getTime() ?? b.window.start?.getTime() ?? Number.MAX_SAFE_INTEGER
-        return ae - be
-      })
-  }, [views])
 
   return (
     <div className="app">
