@@ -87,14 +87,16 @@ export function TaskCard({ view, settings, onChange, onDeleteCustom, focused }: 
                 推奨：{jp(w.start)}〜{jp(w.end, w.end.getFullYear() !== new Date().getFullYear())}
               </span>
             ) : (
-              <span>期間指定なし</span>
+              <span>{task.deadlineLabel ? `期限：${task.deadlineLabel}` : '期間指定なし'}</span>
             )}
+            {w.start && w.end && task.deadlineLabel && <span>期限：{task.deadlineLabel}</span>}
             {timing === 'now' && daysLeft !== undefined && !closed && (
               <span className={`left ${daysLeft <= 7 ? 'urgent' : ''}`}>
                 {task.hardDeadline ? '提出期限' : '推奨期間'}まであと{daysLeft}日
               </span>
             )}
             {timing === 'overdue' && <span className="left urgent">推奨期間超過</span>}
+            {task.place && <span className="where">場所：{task.place}</span>}
             {state.date && (
               <span className="planned">
                 予定：{jp(parseDate(state.date)!)}
@@ -105,7 +107,6 @@ export function TaskCard({ view, settings, onChange, onDeleteCustom, focused }: 
             {state.date && (
               <span className="who">担当：{ASSIGNEE_LABEL[state.assignee ?? ''] ?? '未定'}</span>
             )}
-            {state.date && task.place && <span className="where">場所：{task.place}</span>}
           </div>
           <span className="chev" aria-hidden="true">{open ? '閉じる' : '詳細'}</span>
         </button>
@@ -113,19 +114,18 @@ export function TaskCard({ view, settings, onChange, onDeleteCustom, focused }: 
 
       {open && (
         <div className="card-body">
-          <p className="summary">{task.summary}</p>
-
           <div className="info-grid">
-            {task.deadlineLabel && (
+            {(task.deadlineLabel || (w.start && w.end)) && (
               <div className={`info-item ${task.hardDeadline ? 'hard' : ''}`}>
-                <span className="info-label">期限</span>
-                <span className="info-val">{task.deadlineLabel}</span>
-              </div>
-            )}
-            {task.money && (
-              <div className="info-item money-line">
-                <span className="info-label">金額・助成</span>
-                <span className="info-val">{task.money}</span>
+                <span className="info-label">期限・時期</span>
+                <span className="info-val">
+                  {task.deadlineLabel ?? ''}
+                  {task.deadlineLabel && w.start && w.end ? '（' : ''}
+                  {w.start && w.end
+                    ? `推奨：${jp(w.start)}〜${jp(w.end, w.end.getFullYear() !== new Date().getFullYear())}`
+                    : ''}
+                  {task.deadlineLabel && w.start && w.end ? '）' : ''}
+                </span>
               </div>
             )}
             {task.place && (
@@ -136,12 +136,18 @@ export function TaskCard({ view, settings, onChange, onDeleteCustom, focused }: 
             )}
             {task.bring && task.bring.length > 0 && (
               <div className="info-item">
-                <span className="info-label">必要なもの</span>
+                <span className="info-label">持ち物（{task.bring.length}点）</span>
                 <ul className="bring-list">
                   {task.bring.map((b) => (
                     <li key={b}>{b}</li>
                   ))}
                 </ul>
+              </div>
+            )}
+            {task.money && (
+              <div className="info-item money-line">
+                <span className="info-label">金額・助成</span>
+                <span className="info-val">{task.money}</span>
               </div>
             )}
             {task.papaNote && (
@@ -151,6 +157,8 @@ export function TaskCard({ view, settings, onChange, onDeleteCustom, focused }: 
               </div>
             )}
           </div>
+
+          <p className="summary">{task.summary}</p>
 
           {task.sourceUrl && (
             <p className="source">
