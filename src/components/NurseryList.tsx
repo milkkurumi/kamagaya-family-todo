@@ -3,6 +3,7 @@ import { HOKATSU_GUIDE, NURSERIES, mapUrl, searchUrl } from '../data/nurseries'
 import type { Nursery, NurseryArea, NurseryFeature, NurseryType } from '../data/nurseries'
 import type { CustomNurseryItem, Settings } from '../types'
 import { formatPhoneNumber } from '../lib/phone'
+import { LAST_VERIFIED_AT } from '../lib/site'
 
 interface NurseryListProps {
   settings: Settings
@@ -298,6 +299,9 @@ export function NurseryList({ settings, onUpdateSettings }: NurseryListProps) {
           <h2>鎌ケ谷市の保育施設・幼稚園（全{allNurseries.length}施設）</h2>
           <p className="section-desc">
             市立・私立認可園から小規模保育、認定こども園、企業主導型（地域枠）まで網羅。各園の公式HP・市紹介ページの確認や、第1〜第6希望の順位づけ・見学管理がここひとつで完結します。
+          </p>
+          <p className="hint">
+            ※掲載している施設情報は{LAST_VERIFIED_AT}時点の確認内容です。受入枠や開所時間などの最新情報は、各園および鎌ケ谷市の公式情報でご確認ください。
           </p>
         </div>
         <div className="section-actions">
