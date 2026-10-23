@@ -237,7 +237,7 @@ export function SettingsPanel({ settings, onSave, onClose, onReset, onToast, ini
         )}
       </div>
 
-      <FriendShareSection onToast={onToast} />
+      {!initial && <FriendShareSection onToast={onToast} />}
     </section>
   )
 }
