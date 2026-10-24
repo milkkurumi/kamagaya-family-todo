@@ -729,6 +729,13 @@ export default function App() {
       <footer>
         <FriendShareSection onToast={setToast} />
         <p>
+          情報の誤り・ご意見・ご要望は
+          <a href="https://forms.gle/oUBddhEfn2VWvFKq5" target="_blank" rel="noopener noreferrer">
+            ご意見・お問い合わせフォーム
+          </a>
+          （Googleフォーム）からお送りください。
+        </p>
+        <p>
           掲載情報は鎌ケ谷市公式ホームページおよび鎌ケ谷市子育て応援サイト「かまっこ応援団」の公開情報をもとに構成しています（最終確認：{LAST_VERIFIED_AT}時点）。制度の最新要件は各タスクの参照元リンクからご確認ください。
         </p>
         <p>
