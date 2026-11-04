@@ -1,4 +1,5 @@
-import type { AppData } from '../types'
+import type { AppData, Settings, TaskDef, TaskState } from '../types'
+import { TASKS } from '../data/tasks'
 
 const KEY = 'kamagaya-family-todo:v1'
 
@@ -34,21 +35,148 @@ function fromB64Url(s: string) {
   return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)))
 }
 
+/**
+ * 共有ペイロード v2（短縮形式）。
+ *
+ * v1 は AppData をそのまま JSON 化していたため、チェックリストの状態が
+ * 「日本語の項目名そのままをキーにしたオブジェクト」で入り、URL が
+ * 3,000字近くになって LINE で送ると見切れ・切断されていた。
+ * v2 では次の圧縮を行い、同じ内容を約1/3の長さにする：
+ * - チェック済み／不要は、項目名ではなくチェックリスト内の「番号（index）」の配列で表す
+ * - false のエントリは送らない（未チェックは「無いこと」と同じ）
+ * - status が 'todo' だけで他に情報のないタスクは送らない
+ * 読み込み側は v1（旧形式）のリンクもそのまま取り込める（後方互換）。
+ */
+interface CompactTaskState {
+  status?: string
+  date?: string
+  time?: string
+  assignee?: string
+  memo?: string
+  calendarAdded?: boolean
+  checklist?: number[]
+  unnecessary?: number[]
+  /** チェックリスト定義に無いキーがあった場合の予備（true のものだけ） */
+  checklistState?: Record<string, boolean>
+  checklistUnnecessary?: Record<string, boolean>
+}
+
+function defOf(id: string, settings: Settings): TaskDef | undefined {
+  return TASKS.find((t) => t.id === id) ?? (settings.customTasks ?? []).find((t) => t.id === id)
+}
+
+function trueOnly(rec?: Record<string, boolean>): Record<string, boolean> | undefined {
+  if (!rec) return undefined
+  const out: Record<string, boolean> = {}
+  for (const [k, v] of Object.entries(rec)) if (v) out[k] = true
+  return Object.keys(out).length > 0 ? out : undefined
+}
+
+function compactTask(id: string, state: TaskState, settings: Settings): CompactTaskState | undefined {
+  const out: CompactTaskState = {}
+  if (state.status && state.status !== 'todo') out.status = state.status
+  if (state.date) out.date = state.date
+  if (state.time) out.time = state.time
+  if (state.assignee) out.assignee = state.assignee
+  if (state.memo) out.memo = state.memo
+  if (state.calendarAdded) out.calendarAdded = true
+
+  const def = defOf(id, settings)
+  if (def?.checklist && def.checklist.length > 0) {
+    const checkedIdx: number[] = []
+    const unnecessaryIdx: number[] = []
+    def.checklist.forEach((label, i) => {
+      if (state.checklistState?.[label]) checkedIdx.push(i)
+      if (state.checklistUnnecessary?.[label]) unnecessaryIdx.push(i)
+    })
+    if (checkedIdx.length > 0) out.checklist = checkedIdx
+    if (unnecessaryIdx.length > 0) out.unnecessary = unnecessaryIdx
+    // 定義に無いキーは予備形式で残す
+    const known = new Set(def.checklist)
+    const extraChecked = trueOnly(
+      Object.fromEntries(Object.entries(state.checklistState ?? {}).filter(([k]) => !known.has(k))),
+    )
+    const extraUnnecessary = trueOnly(
+      Object.fromEntries(Object.entries(state.checklistUnnecessary ?? {}).filter(([k]) => !known.has(k))),
+    )
+    if (extraChecked) out.checklistState = extraChecked
+    if (extraUnnecessary) out.checklistUnnecessary = extraUnnecessary
+  } else {
+    const cs = trueOnly(state.checklistState)
+    if (cs) out.checklistState = cs
+    const cu = trueOnly(state.checklistUnnecessary)
+    if (cu) out.checklistUnnecessary = cu
+  }
+  return Object.keys(out).length > 0 ? out : undefined
+}
+
+function expandTask(id: string, ct: CompactTaskState, settings: Settings): TaskState {
+  const state: TaskState = { status: (ct.status as TaskState['status']) ?? 'todo' }
+  if (ct.date) state.date = ct.date
+  if (ct.time) state.time = ct.time
+  if (ct.assignee) state.assignee = ct.assignee as TaskState['assignee']
+  if (ct.memo) state.memo = ct.memo
+  if (ct.calendarAdded) state.calendarAdded = true
+  const def = defOf(id, settings)
+  const checklistState: Record<string, boolean> = { ...(ct.checklistState ?? {}) }
+  const checklistUnnecessary: Record<string, boolean> = { ...(ct.checklistUnnecessary ?? {}) }
+  if (def?.checklist) {
+    for (const i of ct.checklist ?? []) {
+      const label = def.checklist[i]
+      if (label) checklistState[label] = true
+    }
+    for (const i of ct.unnecessary ?? []) {
+      const label = def.checklist[i]
+      if (label) checklistUnnecessary[label] = true
+    }
+  }
+  if (Object.keys(checklistState).length > 0) state.checklistState = checklistState
+  if (Object.keys(checklistUnnecessary).length > 0) state.checklistUnnecessary = checklistUnnecessary
+  return state
+}
+
+/** AppData → 共有用 base64url 文字列（v2 短縮形式） */
+export function encodeSharePayload(d: AppData): string {
+  const tasks: Record<string, CompactTaskState> = {}
+  for (const [id, state] of Object.entries(d.tasks)) {
+    const ct = compactTask(id, state, d.settings)
+    if (ct) tasks[id] = ct
+  }
+  return toB64Url(JSON.stringify({ v: 2, settings: d.settings, tasks }))
+}
+
+/** 共有用 base64url 文字列 → AppData（v2 と v1 旧形式の両対応） */
+export function decodeSharePayload(s: string): AppData | undefined {
+  try {
+    const parsed: unknown = JSON.parse(fromB64Url(s))
+    if (!parsed || typeof parsed !== 'object') return undefined
+    const obj = parsed as Record<string, unknown>
+    const settings = { ...EMPTY.settings, ...((obj.settings as Settings) ?? {}) }
+    if (obj.v === 2) {
+      const tasks: Record<string, TaskState> = {}
+      for (const [id, ct] of Object.entries((obj.tasks as Record<string, CompactTaskState>) ?? {})) {
+        tasks[id] = expandTask(id, ct, settings)
+      }
+      return { settings, tasks }
+    }
+    // v1（旧形式）: AppData そのまま
+    const d = parsed as AppData
+    return { settings, tasks: d.tasks ?? {} }
+  } catch {
+    return undefined
+  }
+}
+
 export function shareUrl(d: AppData): string {
   const url = new URL(location.href)
-  url.hash = `share=${toB64Url(JSON.stringify(d))}`
+  url.hash = `share=${encodeSharePayload(d)}`
   return url.toString()
 }
 
 export function readShared(): AppData | undefined {
   const m = location.hash.match(/share=([^&]+)/)
   if (!m) return undefined
-  try {
-    const d = JSON.parse(fromB64Url(m[1])) as AppData
-    return { settings: { ...EMPTY.settings, ...d.settings }, tasks: d.tasks ?? {} }
-  } catch {
-    return undefined
-  }
+  return decodeSharePayload(m[1])
 }
 
 export function clearHash() {

@@ -194,6 +194,22 @@ export default function App() {
 
   const copyShare = async () => {
     const url = shareUrl(data)
+    // スマホでは OS の共有シートを直接開く（LINE アプリを選んで送れる）。
+    // 共有リンクには個人データが含まれるため、外部の共有プラグイン
+    // （URL が第三者のサーバーを経由する方式）は使わない。
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'かまがや親子カレンダー',
+          text: 'かまがや親子カレンダーの共有リンクです。開いて「データを取り込む」を押してください。',
+          url,
+        })
+        return
+      } catch (e) {
+        // ユーザーが共有をキャンセルした場合は何もしない。それ以外はコピーにフォールバック
+        if (e instanceof DOMException && e.name === 'AbortError') return
+      }
+    }
     try {
       await navigator.clipboard.writeText(url)
       setToast('共有リンクをコピーしました。LINE等でパートナーに送信してください')
@@ -201,6 +217,25 @@ export default function App() {
       prompt('このリンクをパートナーに送ってください', url)
     }
   }
+
+  // NOTE: Hooks must run before ANY early return. There are two gates
+  // below — the shared-data gate and the settings gate — and this useMemo
+  // has to stay above both. When it sat below the settings gate, switching
+  // settings ⇔ main crashed the app (PR #25). It then still sat below the
+  // shared gate, so importing (or cancelling) a partner share link crashed
+  // the same way ("Rendered more hooks than during the previous render").
+  const meetingCandidates = useMemo(() => {
+    const targetTimings: Timing[] = ['overdue', 'now', 'soon']
+    return views
+      .filter((v) => v.state.status === 'todo' && !v.state.date && targetTimings.includes(v.timing))
+      .sort((a, b) => {
+        const po = PRIORITY[a.task.priority].order - PRIORITY[b.task.priority].order
+        if (po !== 0) return po
+        const ae = a.window.end?.getTime() ?? a.window.start?.getTime() ?? Number.MAX_SAFE_INTEGER
+        const be = b.window.end?.getTime() ?? b.window.start?.getTime() ?? Number.MAX_SAFE_INTEGER
+        return ae - be
+      })
+  }, [views])
 
   if (shared) {
     return (
@@ -234,23 +269,6 @@ export default function App() {
       </div>
     )
   }
-
-  // NOTE: Hooks must run before any early return. The settings gate below
-  // returns early, so this useMemo has to stay above it — moving it below
-  // the gate crashes the app ("Rendered more hooks than during the
-  // previous render") when the view switches between settings and main.
-  const meetingCandidates = useMemo(() => {
-    const targetTimings: Timing[] = ['overdue', 'now', 'soon']
-    return views
-      .filter((v) => v.state.status === 'todo' && !v.state.date && targetTimings.includes(v.timing))
-      .sort((a, b) => {
-        const po = PRIORITY[a.task.priority].order - PRIORITY[b.task.priority].order
-        if (po !== 0) return po
-        const ae = a.window.end?.getTime() ?? a.window.start?.getTime() ?? Number.MAX_SAFE_INTEGER
-        const be = b.window.end?.getTime() ?? b.window.start?.getTime() ?? Number.MAX_SAFE_INTEGER
-        return ae - be
-      })
-  }, [views])
 
   if (!configured || showSettings) {
     if (showOnboarding) {
