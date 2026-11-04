@@ -3,6 +3,7 @@ import type { Assignee, Settings, TaskState } from '../types'
 import { fmt, isWeekend, jp, parseDate, quickDates, suggestedDate } from '../lib/date'
 import { buildIcs, downloadIcs, googleCalendarUrl } from '../lib/calendar'
 import { PRIORITY, ROLE, STATUS, type TaskView } from '../lib/view'
+import { isChecked, isUnnecessary, toggleUnnecessaryPatch } from '../lib/checklist'
 
 interface Props {
   view: TaskView
@@ -37,8 +38,16 @@ export function TaskCard({ view, settings, onChange, onDeleteCustom, focused }: 
 
   const toggleChecklist = (item: string) => {
     const current = state.checklistState || {}
-    update({ checklistState: { ...current, [item]: !current[item] } })
+    const next = !isChecked(state, item)
+    update({
+      checklistState: { ...current, [item]: next },
+      ...(next
+        ? { checklistUnnecessary: { ...(state.checklistUnnecessary || {}), [item]: false } }
+        : {}),
+    })
   }
+
+  const toggleChecklistUnnecessary = (item: string) => update(toggleUnnecessaryPatch(state, item))
 
   const schedule = () => {
     if (!date) return
@@ -173,16 +182,31 @@ export function TaskCard({ view, settings, onChange, onDeleteCustom, focused }: 
               <div className="subhead">準備・確認リスト</div>
               <div className="checklist">
                 {task.checklist.map((item) => {
-                  const checked = state.checklistState?.[item] ?? false
+                  const unnecessary = isUnnecessary(state, item)
+                  const checked = isChecked(state, item)
                   return (
-                    <label key={item} className={`checklist-item ${checked ? 'checked' : ''}`}>
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => toggleChecklist(item)}
-                      />
-                      <span>{item}</span>
-                    </label>
+                    <div
+                      key={item}
+                      className={`checklist-item ${checked ? 'checked' : ''} ${unnecessary ? 'unnecessary' : ''}`}
+                    >
+                      <label className="checklist-item-main">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          disabled={unnecessary}
+                          onChange={() => toggleChecklist(item)}
+                        />
+                        <span>{item}</span>
+                        {unnecessary && <span className="badge st-skip">不要</span>}
+                      </label>
+                      <button
+                        type="button"
+                        className="shopping-flag-btn"
+                        onClick={() => toggleChecklistUnnecessary(item)}
+                      >
+                        {unnecessary ? '戻す' : '不要'}
+                      </button>
+                    </div>
                   )
                 })}
               </div>

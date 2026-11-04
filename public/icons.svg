@@ -31,6 +31,11 @@
     <rect width="14" height="13" x="3" y="4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" rx="2"/>
     <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M6.5 2.5v3m7-3v3M3 8.5h14"/>
   </symbol>
+  <symbol id="tab-shopping" viewBox="0 0 20 20">
+    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M2.5 3.5h2l2.4 10.2a1 1 0 0 0 .97.78h7.4a1 1 0 0 0 .97-.78L17.5 6.5H5.5"/>
+    <circle cx="8" cy="17.4" r="1" fill="currentColor"/>
+    <circle cx="15.5" cy="17.4" r="1" fill="currentColor"/>
+  </symbol>
   <symbol id="tab-nursery" viewBox="0 0 20 20">
     <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M3 9.2 10 3.5l7 5.7v7.3a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.2Z"/>
     <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M8 17.5v-5h4v5"/>

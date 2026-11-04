@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { AppData, Phase, Priority, Role, Settings, TaskDef, TaskState } from './types'
+import type { AppData, Phase, Priority, Role, Settings, ShoppingCustomItem, TaskDef, TaskState } from './types'
 import { TASKS } from './data/tasks'
 import { EMPTY, clearHash, load, readShared, save, shareUrl } from './lib/storage'
 import { ageText, jp, parseDate, pregnancyWeek, today } from './lib/date'
@@ -11,10 +11,11 @@ import { NurseryList } from './components/NurseryList'
 import { Onboarding } from './components/Onboarding'
 import { MoneySimulation } from './components/MoneySimulation'
 import { MeetingMode } from './components/MeetingMode'
+import { ShoppingList, shoppingCounts } from './components/ShoppingList'
 import { formatPhoneNumber } from './lib/phone'
 import { LAST_VERIFIED_AT } from './lib/site'
 
-type Tab = 'now' | 'timeline' | 'scheduled' | 'nursery' | 'money'
+type Tab = 'now' | 'timeline' | 'scheduled' | 'shopping' | 'nursery' | 'money'
 
 export default function App() {
   const [data, setData] = useState<AppData>(load)
@@ -138,6 +139,43 @@ export default function App() {
     }))
     setToast('追加タスクを削除しました')
   }
+
+  // 買い物タブのカスタム項目（settings に保存し、共有リンク・バックアップにも含まれる）
+  const addCustomShoppingItem = (label: string) => {
+    const item: ShoppingCustomItem = {
+      id: `custom-shopping-${Date.now()}`,
+      label,
+      status: 'todo',
+    }
+    setData((d) => ({
+      ...d,
+      settings: {
+        ...d.settings,
+        customShoppingItems: [item, ...(d.settings.customShoppingItems || [])],
+      },
+    }))
+    setToast('買い物リストに追加しました')
+  }
+
+  const updateCustomShoppingItem = (id: string, patch: Partial<ShoppingCustomItem>) =>
+    setData((d) => ({
+      ...d,
+      settings: {
+        ...d.settings,
+        customShoppingItems: (d.settings.customShoppingItems || []).map((c) =>
+          c.id === id ? { ...c, ...patch } : c,
+        ),
+      },
+    }))
+
+  const deleteCustomShoppingItem = (id: string) =>
+    setData((d) => ({
+      ...d,
+      settings: {
+        ...d.settings,
+        customShoppingItems: (d.settings.customShoppingItems || []).filter((c) => c.id !== id),
+      },
+    }))
 
   const jumpToTask = (id: string) => {
     setPriorityFilter('all')
@@ -271,6 +309,8 @@ export default function App() {
     .filter((v) => v.state.date && v.state.status !== 'skip')
     .sort((a, b) => a.state.date!.localeCompare(b.state.date!))
   const upcomingScheduled = scheduled.filter((v) => parseDate(v.state.date)! >= today() && v.state.status !== 'done')
+  // 買い物タブのバッジ用（hooks ではなく通常の集計なので、設定ゲートより後でも問題ない）
+  const shoppingRemaining = shoppingCounts(views, settings.customShoppingItems).remaining
 
   const mustOpen = views.filter(
     (v) => v.task.priority === 'must' && (v.timing === 'now' || v.timing === 'overdue') && v.state.status === 'todo',
@@ -452,6 +492,7 @@ export default function App() {
             ['now', 'いまやること'],
             ['timeline', '全期間一覧'],
             ['scheduled', `予定表（${upcomingScheduled.length}）`],
+            ['shopping', `買い物（${shoppingRemaining}）`],
             ['nursery', '保活・園比較'],
             ['money', 'お金・助成金'],
           ] as const
@@ -720,6 +761,17 @@ export default function App() {
             })}
           </section>
         )}
+        {tab === 'shopping' && (
+          <ShoppingList
+            views={views}
+            onChange={updateTask}
+            onJump={jumpToTask}
+            customItems={settings.customShoppingItems || []}
+            onAddCustom={addCustomShoppingItem}
+            onUpdateCustom={updateCustomShoppingItem}
+            onDeleteCustom={deleteCustomShoppingItem}
+          />
+        )}
         {tab === 'nursery' && <NurseryList settings={settings} onUpdateSettings={saveSettings} />}
         {tab === 'money' && (
           <MoneySimulation settings={settings} onUpdateSettings={saveSettings} views={views} onJump={jumpToTask} />
@@ -749,6 +801,7 @@ export default function App() {
             ['now', 'いまやる', 'tab-now'],
             ['timeline', '全期間', 'tab-timeline'],
             ['scheduled', `予定（${upcomingScheduled.length}）`, 'tab-scheduled'],
+            ['shopping', `買い物（${shoppingRemaining}）`, 'tab-shopping'],
             ['nursery', '保活', 'tab-nursery'],
             ['money', 'お金', 'tab-money'],
           ] as const

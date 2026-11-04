@@ -63,6 +63,16 @@ export interface TaskState {
   calendarAdded?: boolean
   /** チェックリストの完了状態（キーはアイテムの文字列） */
   checklistState?: Record<string, boolean>
+  /** チェックリストで「不要」とした項目（キーはアイテムの文字列）。完了状態とは排他 */
+  checklistUnnecessary?: Record<string, boolean>
+}
+
+/** 買い物タブでユーザーが自分で追加した項目 */
+export interface ShoppingCustomItem {
+  id: string
+  label: string
+  /** todo: 未購入 / done: 購入済み / skip: 不要 */
+  status: 'todo' | 'done' | 'skip'
 }
 
 export interface CustomNurseryItem {
@@ -104,6 +114,8 @@ export interface Settings {
   customNurseries?: CustomNurseryItem[]
   /** ユーザーが追加したカスタムタスク */
   customTasks?: TaskDef[]
+  /** 買い物タブでユーザーが追加した買い物項目 */
+  customShoppingItems?: ShoppingCustomItem[]
   /** 陣痛時などの緊急連絡先 */
   emergencyContacts?: { hospital?: string; taxi?: string }
   /** お金シミュレーションの入力値 */
