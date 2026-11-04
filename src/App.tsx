@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { AppData, Phase, Priority, Role, Settings, ShoppingCustomItem, TaskDef, TaskState } from './types'
 import { TASKS } from './data/tasks'
-import { EMPTY, clearHash, load, readShared, save, shareUrl } from './lib/storage'
+import { EMPTY, clearHash, load, rawShareParam, readShared, save, shareUrl } from './lib/storage'
 import { ageText, jp, parseDate, pregnancyWeek, today } from './lib/date'
 import { PHASE, PRIORITY, ROLE, TIMING_LABEL, buildViews, sortViews, type Timing, type TaskView } from './lib/view'
 import { buildIcs, downloadIcs } from './lib/calendar'
@@ -20,6 +20,11 @@ type Tab = 'now' | 'timeline' | 'scheduled' | 'shopping' | 'nursery' | 'money'
 export default function App() {
   const [data, setData] = useState<AppData>(load)
   const [shared, setShared] = useState<AppData | undefined>(readShared)
+  // 共有パラメータは付いているのに復号できない＝リンクが途中で切れている。
+  // そのまま初期設定に落とすと「引き継げていない」ことに気づけないため、専用画面で知らせる
+  const [shareBroken, setShareBroken] = useState<boolean>(
+    () => rawShareParam() !== undefined && readShared() === undefined,
+  )
   const [tab, setTab] = useState<Tab>('now')
   const [showSettings, setShowSettings] = useState(false)
   const [showEmergency, setShowEmergency] = useState(false)
@@ -237,6 +242,33 @@ export default function App() {
       })
   }, [views])
 
+  if (shareBroken) {
+    return (
+      <div className="app">
+        <Header />
+        <section className="settings">
+          <h2>共有リンクを読み取れませんでした</h2>
+          <p className="hint">
+            リンクが途中で切れてしまった可能性があります。お手数ですが、送ってくれた方に
+            アプリの「共有リンク」からもう一度送ってもらってください。
+            その際、LINEのプレビューではなく、メッセージ内のリンク全体が届いているかもご確認ください。
+          </p>
+          <div className="actions">
+            <button
+              className="primary"
+              onClick={() => {
+                clearHash()
+                setShareBroken(false)
+              }}
+            >
+              共有なしでアプリを開く
+            </button>
+          </div>
+        </section>
+      </div>
+    )
+  }
+
   if (shared) {
     return (
       <div className="app">
@@ -244,6 +276,12 @@ export default function App() {
         <section className="settings">
           <h2>パートナーから共有されたデータがあります</h2>
           <p className="hint">取り込むと、この端末の進捗・予定・設定が共有内容で更新されます。</p>
+          {/Line\//.test(navigator.userAgent) && (
+            <p className="hint">
+              ※ いまLINEの中で開いています。取り込んだデータはこの画面の中だけに保存されるため、
+              右上の「︙」メニューから「ブラウザで開く」を選んでから取り込むのがおすすめです。
+            </p>
+          )}
           <div className="actions">
             <button
               className="primary"
