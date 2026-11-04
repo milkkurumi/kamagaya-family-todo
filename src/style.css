@@ -502,7 +502,7 @@ label.small {
 /* ───────── Navigation Tabs ───────── */
 .tabs {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 0.25rem;
   background: var(--surface-sub);
   border: 1px solid var(--line);
@@ -1179,6 +1179,191 @@ label.small {
   color: #ffffff;
   padding: 0.05rem 0.45rem;
   border-radius: 4px;
+}
+
+/* ───────── Shopping List ───────── */
+.shopping-summary {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.shopping-summary-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.86rem;
+  color: var(--sub);
+}
+
+.shopping-summary-head strong {
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.shopping-all-done {
+  margin: 0;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--opt);
+}
+
+.shopping-group {
+  margin-bottom: 1.25rem;
+}
+
+.shopping-list {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.shopping-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 48px;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+  border-bottom: 1px solid var(--line);
+}
+
+.shopping-item:last-child {
+  border-bottom: none;
+}
+
+.shopping-item:hover {
+  background: var(--bg);
+}
+
+.shopping-item.checked span {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.shopping-item input[type='checkbox'] {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  accent-color: var(--primary);
+  margin: 0;
+}
+
+.shopping-affiliates {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+
+.shopping-affiliates-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--sub);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.shopping-affiliate-link {
+  display: block;
+  text-decoration: none;
+  color: var(--primary);
+  font-size: 0.84rem;
+  font-weight: 600;
+  padding: 0.35rem 0.55rem;
+  border-radius: 4px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.shopping-affiliate-link:hover {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+}
+
+.shopping-add-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.shopping-add-form input {
+  flex: 1 1 220px;
+}
+
+.shopping-item-main {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.65rem;
+  flex: 1;
+  min-width: 0;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.shopping-item.unnecessary {
+  background: var(--surface-sub);
+}
+
+.shopping-item.unnecessary .shopping-item-main span {
+  color: var(--muted);
+}
+
+.shopping-flag-btn {
+  flex-shrink: 0;
+  padding: 0.18rem 0.55rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--sub);
+  background: var(--bg);
+}
+
+.shopping-flag-btn.danger {
+  color: var(--must);
+}
+
+.checklist-item.unnecessary span {
+  color: var(--muted);
+}
+
+.checklist-item-main {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.55rem;
+  flex: 1;
+  min-width: 0;
+  font-size: 0.84rem;
+  font-weight: 400;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.checklist-item-main input[type='checkbox'] {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  accent-color: var(--primary);
+  margin: 0;
+}
+
+.checklist-item.checked .checklist-item-main span {
+  text-decoration: line-through;
+  color: var(--muted);
 }
 
 /* ───────── Nursery List & Hokatsu Guide ───────── */
@@ -2264,7 +2449,7 @@ footer .share-friend-box {
   }
   .bottom-tabs {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     position: fixed;
     left: 0;
     right: 0;
