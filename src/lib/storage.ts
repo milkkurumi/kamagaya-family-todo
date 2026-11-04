@@ -167,20 +167,35 @@ export function decodeSharePayload(s: string): AppData | undefined {
   }
 }
 
+/**
+ * 共有パラメータの置き場所はクエリ（?share=）を使う。
+ * 以前はハッシュ（#share=）だったが、LINE のリンクプレビュー／アプリ内
+ * ブラウザ経由だと # 以降が落ちて「ただの初期設定画面」が開く事象が
+ * あったため。読み込みは旧リンク互換のためハッシュも見る。
+ */
 export function shareUrl(d: AppData): string {
   const url = new URL(location.href)
-  url.hash = `share=${encodeSharePayload(d)}`
+  url.hash = ''
+  url.searchParams.set('share', encodeSharePayload(d))
   return url.toString()
 }
 
-export function readShared(): AppData | undefined {
+/** URL に載っている生の共有パラメータ（クエリ優先、無ければハッシュ） */
+export function rawShareParam(): string | undefined {
+  const q = new URLSearchParams(location.search).get('share')
+  if (q) return q
   const m = location.hash.match(/share=([^&]+)/)
-  if (!m) return undefined
-  return decodeSharePayload(m[1])
+  return m ? m[1] : undefined
+}
+
+export function readShared(): AppData | undefined {
+  const raw = rawShareParam()
+  if (!raw) return undefined
+  return decodeSharePayload(raw)
 }
 
 export function clearHash() {
-  history.replaceState(null, '', location.pathname + location.search)
+  history.replaceState(null, '', location.pathname)
 }
 
 // ───────── バックアップ（JSON書き出し・検証・読み込み） ─────────
