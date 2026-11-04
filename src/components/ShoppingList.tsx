@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import type { ShoppingCustomItem, TaskState } from '../types'
+import type { Phase, ShoppingCustomItem, TaskState } from '../types'
 import { PHASE, type TaskView } from '../lib/view'
 import { isChecked, isUnnecessary, toggleUnnecessaryPatch } from '../lib/checklist'
+import { matchAffiliates, type AffiliateLink } from '../lib/affiliate'
 
 interface Props {
   views: TaskView[]
@@ -36,34 +37,39 @@ interface ShoppingItem {
   label: string
   checked: boolean
   unnecessary: boolean
+  affiliates: AffiliateLink[]
 }
 
 interface ShoppingGroup {
   id: string
   title: string
-  phaseLabel?: string
+  phase?: Phase
   items: ShoppingItem[]
-  affiliates?: { url: string; label: string }[]
+  /** どの項目にも対応しない、グループ全体向けの関連アイテム */
+  genericAffiliates: AffiliateLink[]
   jumpId?: string
   custom?: boolean
 }
 
-function taskItems(view: TaskView): ShoppingItem[] {
-  const labels = view.task.checklist ?? []
-  return labels.map((label) => ({
-    key: `${view.task.id}:${label}`,
-    label,
-    checked: isChecked(view.state, label),
-    unnecessary: isUnnecessary(view.state, label),
-  }))
-}
-
-/** 単品購入タスクのチェック状態。個別チェックが保存済みならそちらを優先し、無い場合のみタスク完了＝購入済みとして扱う */
-function singlePurchaseChecked(view: TaskView, label: string): boolean {
-  if (view.state.checklistState && label in view.state.checklistState) {
-    return isChecked(view.state, label)
+function withAffiliates(
+  labels: { label: string; checked: boolean; unnecessary: boolean }[],
+  keyPrefix: string,
+  affiliates: AffiliateLink[] | undefined,
+): { items: ShoppingItem[]; genericAffiliates: AffiliateLink[] } {
+  const { perItem, unmatched } = matchAffiliates(
+    affiliates,
+    labels.map((l) => l.label),
+  )
+  return {
+    items: labels.map((l) => ({
+      key: `${keyPrefix}:${l.label}`,
+      label: l.label,
+      checked: l.checked,
+      unnecessary: l.unnecessary,
+      affiliates: perItem.get(l.label) ?? [],
+    })),
+    genericAffiliates: unmatched,
   }
-  return view.state.status === 'done'
 }
 
 function buildGroups(views: TaskView[], customItems: ShoppingCustomItem[]): ShoppingGroup[] {
@@ -78,7 +84,9 @@ function buildGroups(views: TaskView[], customItems: ShoppingCustomItem[]): Shop
         label: c.label,
         checked: c.status === 'done',
         unnecessary: c.status === 'skip',
+        affiliates: [],
       })),
+      genericAffiliates: [],
       custom: true,
     })
   }
@@ -86,35 +94,50 @@ function buildGroups(views: TaskView[], customItems: ShoppingCustomItem[]): Shop
   for (const v of views) {
     if (SINGLE_PURCHASE_TASKS[v.task.id]) {
       const label = SINGLE_PURCHASE_TASKS[v.task.id]
+      const { items, genericAffiliates } = withAffiliates(
+        [{ label, checked: singlePurchaseChecked(v, label), unnecessary: isUnnecessary(v.state, label) }],
+        v.task.id,
+        v.task.affiliate,
+      )
       groups.push({
         id: v.task.id,
         title: v.task.title,
-        phaseLabel: PHASE[v.task.phase].label,
-        items: [
-          {
-            key: `${v.task.id}:${label}`,
-            label,
-            checked: singlePurchaseChecked(v, label),
-            unnecessary: isUnnecessary(v.state, label),
-          },
-        ],
-        affiliates: v.task.affiliate,
+        phase: v.task.phase,
+        items,
+        genericAffiliates,
         jumpId: v.task.id,
       })
       continue
     }
     if (!v.task.checklist || v.task.checklist.length === 0) continue
     if (NON_SHOPPING_CHECKLIST_TASKS.has(v.task.id)) continue
+    const { items, genericAffiliates } = withAffiliates(
+      v.task.checklist.map((label) => ({
+        label,
+        checked: isChecked(v.state, label),
+        unnecessary: isUnnecessary(v.state, label),
+      })),
+      v.task.id,
+      v.task.affiliate,
+    )
     groups.push({
       id: v.task.id,
       title: v.task.title,
-      phaseLabel: PHASE[v.task.phase].label,
-      items: taskItems(v),
-      affiliates: v.task.affiliate,
+      phase: v.task.phase,
+      items,
+      genericAffiliates,
       jumpId: v.task.id,
     })
   }
   return groups
+}
+
+/** 単品購入タスクのチェック状態。個別チェックが保存済みならそちらを優先し、無い場合のみタスク完了＝購入済みとして扱う */
+function singlePurchaseChecked(view: TaskView, label: string): boolean {
+  if (view.state.checklistState && label in view.state.checklistState) {
+    return isChecked(view.state, label)
+  }
+  return view.state.status === 'done'
 }
 
 /** 買い物リスト全体の集計（タブの件数バッジ用）。「不要」は母数から除く */
@@ -135,6 +158,12 @@ export function shoppingCounts(views: TaskView[], customItems: ShoppingCustomIte
   return { total, done, remaining: total - done, unnecessary }
 }
 
+function groupStats(group: ShoppingGroup) {
+  const active = group.items.filter((i) => !i.unnecessary)
+  const done = active.filter((i) => i.checked).length
+  return { active: active.length, done, remaining: active.length - done }
+}
+
 export function ShoppingList({
   views,
   onChange,
@@ -144,11 +173,13 @@ export function ShoppingList({
   onUpdateCustom,
   onDeleteCustom,
 }: Props) {
-  // 入力・フィルター状態はこのコンポーネント内に閉じる。
+  // 入力・フィルター・折りたたみ状態はこのコンポーネント内に閉じる。
   // App 側に足すと設定ゲート（early return）より前に置く必要が出て、
   // hooks 順序クラッシュ（PR #25）の再発リスクになるため。
   const [hideDone, setHideDone] = useState(false)
   const [newLabel, setNewLabel] = useState('')
+  const [collapsedStages, setCollapsedStages] = useState<Record<string, boolean>>({})
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({})
 
   const groups = buildGroups(views, customItems)
   const { total, done, remaining, unnecessary } = shoppingCounts(views, customItems)
@@ -194,13 +225,124 @@ export function ShoppingList({
     setNewLabel('')
   }
 
+  const renderGroup = (group: ShoppingGroup) => {
+    const stats = groupStats(group)
+    // 既定では「残りが無いグループ」は畳む。ユーザーが切り替えたらそちらを優先する
+    const collapsed = collapsedGroups[group.id] ?? stats.remaining === 0
+    const ordered = [
+      ...group.items.filter((i) => !i.checked && !i.unnecessary),
+      ...group.items.filter((i) => i.checked && !i.unnecessary),
+      ...group.items.filter((i) => i.unnecessary),
+    ]
+    const visible = hideDone ? ordered.filter((i) => !i.checked) : ordered
+    return (
+      <section key={group.id} className="shopping-group">
+        <div className="group-head shopping-group-head">
+          <button
+            type="button"
+            className="shopping-collapse-btn"
+            aria-expanded={!collapsed}
+            onClick={() => setCollapsedGroups((m) => ({ ...m, [group.id]: !collapsed }))}
+          >
+            <span className="shopping-chev" aria-hidden="true">
+              {collapsed ? '▸' : '▾'}
+            </span>
+            <span className="shopping-group-title">{group.title}</span>
+            <span className="count">
+              {stats.done}/{stats.active}
+            </span>
+          </button>
+          {group.jumpId && (
+            <button type="button" className="small-btn" onClick={() => onJump(group.jumpId!)}>
+              元のタスクを開く →
+            </button>
+          )}
+        </div>
+
+        {!collapsed && (
+          <>
+            {group.genericAffiliates.length > 0 && (
+              <div className="shopping-generic-affiliates">
+                <span className="shopping-affiliates-label">
+                  関連アイテム <span className="ad-badge">広告</span>
+                </span>
+                {group.genericAffiliates.map((a, i) => (
+                  <a key={i} href={a.url} target="_blank" rel="noopener noreferrer" className="shopping-affiliate-link">
+                    {a.label} ↗
+                  </a>
+                ))}
+              </div>
+            )}
+
+            {visible.length === 0 ? (
+              <p className="hint block">このグループで買うものは残っていません。</p>
+            ) : (
+              <div className="shopping-list">
+                {visible.map((item) => (
+                  <div
+                    key={item.key}
+                    className={`shopping-item ${item.checked ? 'checked' : ''} ${item.unnecessary ? 'unnecessary' : ''}`}
+                  >
+                    <div className="shopping-item-row">
+                      <label className="shopping-item-main">
+                        <input
+                          type="checkbox"
+                          checked={item.checked}
+                          disabled={item.unnecessary}
+                          onChange={() => toggleItem(group, item)}
+                        />
+                        <span>{item.label}</span>
+                        {item.unnecessary && <span className="badge st-skip">不要</span>}
+                      </label>
+                      <button
+                        type="button"
+                        className="shopping-flag-btn"
+                        onClick={() => toggleUnnecessary(group, item)}
+                      >
+                        {item.unnecessary ? '戻す' : '不要'}
+                      </button>
+                      {group.custom && (
+                        <button
+                          type="button"
+                          className="shopping-flag-btn danger"
+                          onClick={() => onDeleteCustom(item.key)}
+                        >
+                          削除
+                        </button>
+                      )}
+                    </div>
+                    {item.affiliates.map((a, i) => (
+                      <a
+                        key={i}
+                        href={a.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="shopping-item-affiliate"
+                      >
+                        関連アイテム（広告）：{a.label} ↗
+                      </a>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </section>
+    )
+  }
+
+  const customGroup = groups.find((g) => g.custom)
+  const taskGroups = groups.filter((g) => !g.custom)
+  const phaseOrder = Object.keys(PHASE) as Phase[]
+
   return (
     <section className="section-block">
       <div className="section-header-row">
         <div>
           <h2>買い物リスト</h2>
           <p className="section-desc">
-            各タスクの「買うもの・準備するもの」をまとめた一覧です。チェックは各タスク詳細とも連動します。買わないと決めたものは「不要」にでき、不要にしたものは残り件数に数えません。入院準備の持ち物などは、チェック＝「用意済み」として扱ってください。
+            各タスクの「買うもの・準備するもの」を、時期（ステージ）ごとにまとめた一覧です。ステージ名やグループ名を押すと折りたためます。関連アイテムは、対応する項目のすぐ下に表示します。
           </p>
         </div>
         <label className="check small">
@@ -255,85 +397,38 @@ export function ShoppingList({
         <p className="empty">買い物リストに表示できる項目がまだありません。上の欄から追加もできます。</p>
       )}
 
-      {groups.map((group) => {
-        const active = group.items.filter((i) => !i.unnecessary)
-        const groupDone = active.filter((i) => i.checked).length
-        // お店で使いやすいよう、未購入→購入済み→不要の順に（元の順序は維持）
-        const ordered = [
-          ...group.items.filter((i) => !i.checked && !i.unnecessary),
-          ...group.items.filter((i) => i.checked && !i.unnecessary),
-          ...group.items.filter((i) => i.unnecessary),
-        ]
-        const visible = hideDone ? ordered.filter((i) => !i.checked) : ordered
+      {customGroup && renderGroup(customGroup)}
+
+      {phaseOrder.map((phase) => {
+        const stageGroups = taskGroups.filter((g) => g.phase === phase)
+        if (stageGroups.length === 0) return null
+        const stageItems = stageGroups.flatMap((g) => g.items)
+        const stageActive = stageItems.filter((i) => !i.unnecessary)
+        const stageDone = stageActive.filter((i) => i.checked).length
+        const stageRemaining = stageActive.length - stageDone
+        // 既定では「残りが無いステージ」は畳む。ユーザーが切り替えたらそちらを優先する
+        const collapsed = collapsedStages[phase] ?? stageRemaining === 0
         return (
-          <section key={group.id} className="shopping-group">
-            <div className="group-head">
-              <h2>
-                {group.title}
-                {group.phaseLabel && <span className="phase-sub">{group.phaseLabel}</span>}
-                <span className="count">
-                  {groupDone}/{active.length}
-                </span>
-              </h2>
-              {group.jumpId && (
-                <button type="button" className="small-btn" onClick={() => onJump(group.jumpId!)}>
-                  元のタスクを開く →
-                </button>
-              )}
-            </div>
-
-            {visible.length === 0 ? (
-              <p className="hint block">このグループで買うものは残っていません。</p>
-            ) : (
-              <div className="shopping-list">
-                {visible.map((item) => (
-                  <div
-                    key={item.key}
-                    className={`shopping-item ${item.checked ? 'checked' : ''} ${item.unnecessary ? 'unnecessary' : ''}`}
-                  >
-                    <label className="shopping-item-main">
-                      <input
-                        type="checkbox"
-                        checked={item.checked}
-                        disabled={item.unnecessary}
-                        onChange={() => toggleItem(group, item)}
-                      />
-                      <span>{item.label}</span>
-                      {item.unnecessary && <span className="badge st-skip">不要</span>}
-                    </label>
-                    <button
-                      type="button"
-                      className="shopping-flag-btn"
-                      onClick={() => toggleUnnecessary(group, item)}
-                    >
-                      {item.unnecessary ? '戻す' : '不要'}
-                    </button>
-                    {group.custom && (
-                      <button
-                        type="button"
-                        className="shopping-flag-btn danger"
-                        onClick={() => onDeleteCustom(item.key)}
-                      >
-                        削除
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {group.affiliates && group.affiliates.length > 0 && (
-              <div className="shopping-affiliates">
-                <span className="shopping-affiliates-label">
-                  関連アイテム <span className="ad-badge">広告</span>
-                </span>
-                {group.affiliates.map((a, i) => (
-                  <a key={i} href={a.url} target="_blank" rel="noopener noreferrer" className="shopping-affiliate-link">
-                    {a.label} ↗
-                  </a>
-                ))}
-              </div>
-            )}
+          <section key={phase} className="shopping-stage">
+            <button
+              type="button"
+              className="shopping-stage-head"
+              aria-expanded={!collapsed}
+              onClick={() => setCollapsedStages((m) => ({ ...m, [phase]: !collapsed }))}
+            >
+              <span className="shopping-chev" aria-hidden="true">
+                {collapsed ? '▸' : '▾'}
+              </span>
+              <span className="shopping-stage-title">
+                {PHASE[phase].label}
+                <span className="phase-sub">{PHASE[phase].sub}</span>
+              </span>
+              <span className="shopping-stage-count">
+                {stageDone}/{stageActive.length}
+                {stageRemaining > 0 ? `（あと${stageRemaining}点）` : '（完了）'}
+              </span>
+            </button>
+            {!collapsed && <div className="shopping-stage-body">{stageGroups.map(renderGroup)}</div>}
           </section>
         )
       })}

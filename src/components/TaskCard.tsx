@@ -4,6 +4,7 @@ import { fmt, isWeekend, jp, parseDate, quickDates, suggestedDate } from '../lib
 import { buildIcs, downloadIcs, googleCalendarUrl } from '../lib/calendar'
 import { PRIORITY, ROLE, STATUS, type TaskView } from '../lib/view'
 import { isChecked, isUnnecessary, toggleUnnecessaryPatch } from '../lib/checklist'
+import { matchAffiliates } from '../lib/affiliate'
 
 interface Props {
   view: TaskView
@@ -48,6 +49,9 @@ export function TaskCard({ view, settings, onChange, onDeleteCustom, focused }: 
   }
 
   const toggleChecklistUnnecessary = (item: string) => update(toggleUnnecessaryPatch(state, item))
+
+  // 関連アイテムは対応するチェックリスト項目の直下に出し、残りだけを下部のまとめに出す
+  const affiliateMatch = matchAffiliates(task.affiliate, task.checklist ?? [])
 
   const schedule = () => {
     if (!date) return
@@ -184,28 +188,42 @@ export function TaskCard({ view, settings, onChange, onDeleteCustom, focused }: 
                 {task.checklist.map((item) => {
                   const unnecessary = isUnnecessary(state, item)
                   const checked = isChecked(state, item)
+                  const itemAffiliates = affiliateMatch.perItem.get(item) ?? []
                   return (
                     <div
                       key={item}
                       className={`checklist-item ${checked ? 'checked' : ''} ${unnecessary ? 'unnecessary' : ''}`}
                     >
-                      <label className="checklist-item-main">
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          disabled={unnecessary}
-                          onChange={() => toggleChecklist(item)}
-                        />
-                        <span>{item}</span>
-                        {unnecessary && <span className="badge st-skip">不要</span>}
-                      </label>
-                      <button
-                        type="button"
-                        className="shopping-flag-btn"
-                        onClick={() => toggleChecklistUnnecessary(item)}
-                      >
-                        {unnecessary ? '戻す' : '不要'}
-                      </button>
+                      <div className="checklist-item-row">
+                        <label className="checklist-item-main">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            disabled={unnecessary}
+                            onChange={() => toggleChecklist(item)}
+                          />
+                          <span>{item}</span>
+                          {unnecessary && <span className="badge st-skip">不要</span>}
+                        </label>
+                        <button
+                          type="button"
+                          className="shopping-flag-btn"
+                          onClick={() => toggleChecklistUnnecessary(item)}
+                        >
+                          {unnecessary ? '戻す' : '不要'}
+                        </button>
+                      </div>
+                      {itemAffiliates.map((a, i) => (
+                        <a
+                          key={i}
+                          href={a.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="shopping-item-affiliate"
+                        >
+                          関連アイテム（広告）：{a.label} ↗
+                        </a>
+                      ))}
                     </div>
                   )
                 })}
@@ -213,13 +231,13 @@ export function TaskCard({ view, settings, onChange, onDeleteCustom, focused }: 
             </div>
           )}
 
-          {task.affiliate && task.affiliate.length > 0 && (
+          {affiliateMatch.unmatched.length > 0 && (
             <div className="recommendations">
               <div className="subhead">
                 関連アイテム <span className="ad-badge">広告</span>
               </div>
               <ul>
-                {task.affiliate.map((a, i) => (
+                {affiliateMatch.unmatched.map((a, i) => (
                   <li key={i}>
                     <a href={a.url} target="_blank" rel="noopener noreferrer" className="ext-link">
                       {a.label} ↗

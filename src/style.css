@@ -1226,16 +1226,120 @@ label.small {
 
 .shopping-item {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 0.65rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2rem;
   min-height: 48px;
   padding: 0.55rem 0.85rem;
   font-size: 0.92rem;
   font-weight: 500;
   color: var(--ink);
-  cursor: pointer;
   border-bottom: 1px solid var(--line);
+}
+
+.shopping-item-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+}
+
+.shopping-item-affiliate {
+  margin-left: 1.9rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.shopping-item-affiliate:hover {
+  text-decoration: underline;
+}
+
+/* ───────── Shopping Stage Collapse ───────── */
+.shopping-stage {
+  margin-bottom: 1.4rem;
+}
+
+.shopping-stage-head {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--primary);
+  border-radius: var(--radius-md);
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 0.7rem;
+}
+
+.shopping-stage-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--ink);
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.shopping-stage-count {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--sub);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.shopping-chev {
+  font-size: 0.8rem;
+  color: var(--sub);
+  flex-shrink: 0;
+}
+
+.shopping-collapse-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: none;
+  background: transparent;
+  padding: 0.15rem 0.2rem;
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.shopping-collapse-btn:hover:not(:disabled) {
+  background: transparent;
+  border-color: transparent;
+}
+
+.shopping-group-title {
+  text-align: left;
+}
+
+.shopping-generic-affiliates {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.55rem;
+}
+
+.checklist-item {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.25rem;
+}
+
+.checklist-item-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
 }
 
 .shopping-item:last-child {
