@@ -27,9 +27,11 @@ const TARGET_URLS = [
 ];
 
 // 利用可能なモデルを優先順に試す
-// NOTE: gemini-2.5-flash は 2026-11-23 の実行で 404（新規ユーザー向け提供終了）を
-// 返したため外した。フォールバック先が死んでいると、混雑時に必ず失敗する。
-const MODELS = ['gemini-3.8-flash', 'gemini-3.1-pro-preview'];
+// NOTE: このAPIキーは無料枠（Free Tier）のため、無料枠のないモデルは使えない。
+// - gemini-2.5-flash: 2026-11-23 に 404（新規ユーザー向け提供終了）
+// - gemini-3.1-pro-preview: 無料枠の上限が limit: 0（429 RESOURCE_EXHAUSTED）で常時不可
+// そのため無料枠のある Flash 系だけでフォールバックを組む（2026-11-23 の料金ページで確認）。
+const MODELS = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite'];
 
 const NO_CHANGE_MARKER = 'NO_CHANGE';
 
