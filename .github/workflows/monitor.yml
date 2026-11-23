@@ -13,6 +13,7 @@ permissions:
 jobs:
   check-updates:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -30,7 +31,7 @@ jobs:
       - name: Verify URLs
         run: npm run test:urls
 
-      - name: Run Gemini 3.1 Pro Monitoring Script
+      - name: Run Gemini Monitoring Script
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: npx tsx scripts/monitor.ts
