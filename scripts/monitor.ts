@@ -27,7 +27,9 @@ const TARGET_URLS = [
 ];
 
 // 利用可能なモデルを優先順に試す
-const MODELS = ['gemini-3.8-flash', 'gemini-3.1-pro-preview', 'gemini-2.5-flash'];
+// NOTE: gemini-2.5-flash は 2026-11-23 の実行で 404（新規ユーザー向け提供終了）を
+// 返したため外した。フォールバック先が死んでいると、混雑時に必ず失敗する。
+const MODELS = ['gemini-3.8-flash', 'gemini-3.1-pro-preview'];
 
 const NO_CHANGE_MARKER = 'NO_CHANGE';
 
@@ -68,7 +70,10 @@ async function fetchText(target: { name: string; url: string }): Promise<FetchRe
 
 async function generate(ai: GoogleGenAI, prompt: string): Promise<string> {
   let lastError: unknown;
-  const MAX_ATTEMPTS = 6;
+  // 2026-11-23 の失敗では 503 リトライの待ち時間だけで約17分を消費した。
+  // 試行回数とバックオフ上限を絞り、ジョブ全体が早く終わるようにする。
+  const MAX_ATTEMPTS = 4;
+  const MAX_BACKOFF_MS = 60000;
   for (const model of MODELS) {
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       try {
@@ -81,8 +86,10 @@ async function generate(ai: GoogleGenAI, prompt: string): Promise<string> {
         console.warn(`⚠️ ${model} 失敗 (試行 ${attempt}, status=${status})`);
         // クォータ超過・提供終了は再試行しても無駄なので次のモデルへ
         if (status === 429 || status === 404 || status === 400) break;
-        // 503/500 などの一時的な混雑は指数バックオフで再試行 (10s, 20s, 40s ...)
-        await new Promise((r) => setTimeout(r, 10000 * 2 ** (attempt - 1)));
+        if (attempt === MAX_ATTEMPTS) break;
+        // 503/500 などの一時的な混雑は指数バックオフで再試行 (10s, 20s, 40s、上限60s)
+        const waitMs = Math.min(10000 * 2 ** (attempt - 1), MAX_BACKOFF_MS);
+        await new Promise((r) => setTimeout(r, waitMs));
       }
     }
   }
